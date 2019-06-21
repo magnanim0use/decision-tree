@@ -1,0 +1,15 @@
+service: decision-tree-serverless
+
+frameworkVersion: ">=1.2.0 <2.0.0"
+
+provider:
+  name: aws
+  runtime: python3.7
+
+functions:
+  currentTime:
+    handler: src/handler.endpoint
+    events:
+      - http:
+          path: ping
+          method: get

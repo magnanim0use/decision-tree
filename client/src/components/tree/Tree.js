@@ -1,5 +1,4 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import SVG from './svg/Svg.js';
 import './Tree.css';
 
