@@ -1,15 +1,24 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-const Node = ({ nodes }) => (
+const Node = ({ node }) => (
   <div>
-    Hi hello
+    { node }
   </div>
 );
 
 const mapStateToProps = state => {
-  console.log('Node state:', state);
-  return state;
+	const {
+		tree: {
+			nodes = []
+		}
+	} = state;
+
+	if (!nodes.length) {
+		return;
+	}
+
+  	return { node: nodes[ nodes.length - 1 ] };
 };
 
 export default connect(mapStateToProps)(Node);

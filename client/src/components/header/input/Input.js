@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import './Input.css';
-import { addNode } from '../../../actions';
+import { addNode } from '../../../redux/actions';
 
 class AddNode extends React.Component {
   constructor(props) {
