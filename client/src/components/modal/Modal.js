@@ -1,15 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import Node from '../node/Node';
-import render from '../render';
 
-const data = require('../data.json');
-
-const SVG = ({ nodes }) => {
-  render(data);
+const Modal = ({ nodes }) => {
   return (
     <div>
-      // <div id='decision-tree-container' />
+      <div id='decision-tree-container' />
       <ul>
         {nodes && nodes.length
           ? nodes.map((node, index) => {
@@ -23,11 +18,12 @@ const SVG = ({ nodes }) => {
 
 const mapStateToProps = state => {
   const { 
-    tree: {
-      nodes 
+    modal = {
+      isOpen
     }
   } = state;
-  return { nodes };
+
+  return { modal };
 };
 
-export default connect(mapStateToProps)(SVG);
+export default connect(mapStateToProps)(Modal);

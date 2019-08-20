@@ -5,8 +5,10 @@ import './Tree.css';
 export default function Tree() {
   return (
     <div className="Tree">
-      <SVG>
-      </SVG>
+      <div id='decision-tree-container'>	
+      	<SVG>
+      	</SVG>
+      </div>
     </div>
   );
 }
