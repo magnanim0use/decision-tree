@@ -19,6 +19,8 @@ const mapDispatchToProps = dispatch => {
 		treeGraph = new TreeGraph();
 		treeGraph.render(treeData);
 	}, 500);
+
+	return {}
 }
 
 const mapStateToProps = state => {

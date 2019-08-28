@@ -54,6 +54,7 @@
 .link {
   fill: none;
   stroke: #ccc;
+  stroke-opacity: 0.6;
   stroke-width: 1.5px;
 }
 
@@ -63,10 +64,10 @@
   stroke-width: 3px;
 }
 
-.ghostCircle.show{
+.ghostCircle.show {
     display:block;
 }
 
-/*.ghostCircle, .activeDrag .ghostCircle{
+.ghostCircle, .activeDrag .ghostCircle{
      display: none;
-}*/
+}
