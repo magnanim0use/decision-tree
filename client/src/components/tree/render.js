@@ -1,557 +1,445 @@
 import * as d3 from 'd3'
 
-// export default function render () {
-// 	console.log(d3.svg())
-// }
+export default class TreeGraph {
 
-let totalNodes = 0;
-let maxLabelLength = 0;
-let selectedNode = null;
-let draggingNode = null;
+	constructor () {
+		const bindObj = this;
+		this.totalNodes = 0;
+		this.maxLabelLength = 0;
+		this.selectedNode = null;
+		this.draggingNode = null;
 
-let panSpeed = 200;
-let panBoundary = 20;
+		this.panSpeed = 200;
+		this.panBoundary = 20;
 
-let i = 0;
-const duration = 750;
-let root;
-let nodes;
-let links;
-let nodePaths;
-let nodesExit;
-let dragStarted;
-let domNode;
-let scale;
-let node;
-let d;
+		this.i = 0;
+		this.duration = 750;
 
-const viewerWidth = document.body.clientWidth;
-const viewerHeight = document.body.clientHeight;
+		this.viewerWidth = document.body.clientWidth;
+		// this.viewerHeight = document.body.clientHeight;
+		this.viewerHeight = 1200;
 
-const tree = d3.tree().size([
-	viewerHeight,
-	viewerWidth
-]);
+		this.tree = d3.tree().size([
+			bindObj.viewerHeight,
+			bindObj.viewerWidth
+		]);
 
-// const diagonal = d3.svg.diagonal()
-// 	.projection((d) => [ d.y, d.x ]);
+		this.baseSvg = d3.select('#decision-tree-container')
+			.append('svg')
+			.attr('width', bindObj.viewerWidth)
+			.attr('height', bindObj.viewerHeight)
+			.attr('class', 'overlay');
+			// .call(bindObj.zoomListener);
 
-const diagonal = d3.linkHorizontal()
-  .x((d) => d.x)
-  .y((d) => d.y);
+		this.g = d3.select('#decision-tree-container svg')
+			.append('g')
+			.attr('transform', 'translate(80,0)');
 
-const zoomListener = d3.zoom()
-	.scaleExtent([
-		0.1,
-		3
-	])
-	.on(
-		'zoom',
-		zoom
-	);
+		this.dragBehavior = this.dragListener();
 
-const baseSvg = d3.select('#decision-tree-container')
-	.append('svg')
-	.attr({
-		width: viewerWidth,
-		height: viewerHeight,
-		class: 'overlay',
-	})
-	.call(zoomListener);
-
-const svgGroup = baseSvg.append('g');
-
-// const baseSvg = select('#decision-tree-container')
-// 	.append('svg')
-// 	.attr('width', width)
-// 	.attr('height', height)
-// 	.attr('class', 'overlay')
-// 	.call(zoomListener);
-
-
-export default function render (treeData) {
-	visit(treeData, (d) => {
-		totalNodes++;
-		maxLabelLength = Math.max(
-			d.name.length,
-			maxLabelLength
-		);
-	}, ({ children }) => 
-		children && children.length > 0 ? children : null
-	);
-
-	root = treeData;
-	root.x0 = viewerHeight / 2;
-	root.y0 = 0;
-
-	sortTree();
-	update(root);
-	centerNode(root);
-}
-
-
-export function visit (parent, visitFn, subNodeFn) {
-	if (!parent) {
-		return;
+		// this.zoomListener = d3.zoom()
+		// 	.scaleExtent([
+		// 		0.1,
+		// 		3
+		// 	])
+		// 	.on(
+		// 		'zoom',
+		// 		bindObj.zoom(this.svgGroup)
+		// 	);
 	}
 
-	visitFn(parent);
-	const subNodes = subNodeFn(parent);
+	render (treeData) {
+		const bindObj = this;
 
-	if (subNodes) {
-		subNodes.forEach((subNode) => visit(
-			subNode,
-			visitFn,
-			subNodeFn
-		));
-	}
-}
+		this.root = d3.hierarchy(treeData);
 
-export function sortTree (tree) {
-	tree.sort((a, b) => 
-		b.name.toLowerCase() < a.name.toLowerCase() ? 1 : -1
-	);
-}
+		this.root.x0 = this.viewerHeight / 2; //work with this
+		this.root.y0 = 100; //should be dynamic
 
-// export function pan (node, direction, panSpeed = 200, panBoundary = 20) {
-// 	const translateCoords = transform();
-// }
-
-// export function zoom (svgGroup) {
-// 	svgGroup.attr(
-// 		'transform',
-// 		`translate(${event})scale(${event.scale})`
-// 	);
-// }
-
-export function zoom () {
-	svgGroup
-		.attr(
-			'transform',
-			`translate("${d3.event.translate}")scale("${d3.event.scale}")`
-		);
-}
-
-export function initiateDrag (draggingNode, domNode) {
-	d3.select(domNode)
-		.select('.ghostCircle')
-		.attr('pointer-events', 'none');
-
-	d3.selectAll('.ghostCircle')
-		.attr('class', 'node activeDrag');
-
-	svgGroup
-		.selectAll('g.node')
-		.sort((a, b) => 
-			a.id !== draggingNode.id ? 1 : -1
-		);
-
-	if (nodes.length > 1) {
-		links = tree.links(nodes);
-		nodePaths = svgGroup.selectAll('path.link')
-						.data(links, (d) => d.target.id)
-						.remove();
-
-		nodesExit = svgGroup.selectAll('g.node')
-						.data(nodes, (d) => d.id)
-						.filter((d, index) =>
-							d.id !== draggingNode
-						).remove();
+		this.update(this.root);
+		// this.centerNode(this.root);
 	}
 
-	const parentLink = tree.links(tree.nodes(draggingNode.parent));
-	svgGroup.selectAll('path.link')
-		.filter((d, index) =>
-			d.target.id === draggingNode.id
-		).remove();
+	// sortTree (tree) {
+	// 	this.tree.sort((a, b) => 
+	// 		b.name.toLowerCase() < a.name.toLowerCase() ? 1 : -1
+	// 	);
+	// }
 
-	dragStarted = null;
-}
+	//pan (node, direction, panSpeed = 200, panBoundary = 20) {
+	// 	const translateCoords = transform();
+	// }
 
-const dragListener = d3.drag()
-						.on('dragstart', (d) => {
-							if (d === root) {
-								return;
-							}
-
-							dragStarted = true;
-							nodes = tree.nodes(d);
-							d3.event.sourceEvent.stopPropogations();
-						})
-						.on('drag', (d) => {
-							if (d === root) {
-								return;
-							}
-
-							if (dragStarted) {
-								domNode = this;
-								initiateDrag(d, domNode);
-							}
-
-							// const relCoords = d3.mouse(
-							// 	document.getElementsByTagName('svg')[0]
-							// );
-
-							// if (relCoords[0] < panBoundary) {
-							//     panTimer = true;
-							//     pan(this, 'left');
-							// } else if (relCoords[0] > ($('svg').width() - panBoundary)) {
-
-							//     panTimer = true;
-							//     pan(this, 'right');
-							// } else if (relCoords[1] < panBoundary) {
-							//     panTimer = true;
-							//     pan(this, 'up');
-							// } else if (relCoords[1] > ($('svg').height() - panBoundary)) {
-							//     panTimer = true;
-							//     pan(this, 'down');
-							// } else {
-							//     try {
-							//         clearTimeout(panTimer);
-							//     } catch (e) {
-
-							//     }
-							// }
-
-							d.x0 += d3.event.dy;
-							d.y0 += d3.event.dx;
-
-							const node = d3.select(this);
-							node.attr(
-								'transform',
-								`translate("${d.y0}, ${d.xo}")`
-							);
-
-							updateTempConnector();
-						})
-						.on('dragend', (d) => {
-							if (d === root) {
-								return;
-							}
-
-							domNode = this;
-
-							if (selectedNode) {
-								const index = draggingNode
-												.parent
-												.children
-												.indexOf(draggingNode);
-
-								if (index > -1) {
-									draggingNode
-										.parent
-										.children
-										.splice(index, 1);
-								}
-
-								if (
-									typeof selectedNode.children !== 'undefined' ||
-									typeof selectedNode._children !== 'undefined'
-								) {
-									if (typeof selectedNode.children !== 'undefined') {
-										selectedNode.children.push(draggingNode);
-									} else {
-										selectedNode._children.push(draggingNode);
-									}
-								} else {
-									selectedNode.children = [ draggingNode ];
-								}
-
-								expand(selectedNode);
-								sortTree();
-								endDrag();
-							} else {
-								endDrag();
-							}
-						});
-
-export function endDrag () {
-	selectedNode = null;
-
-	d3.selectAll('.ghostCircle')
-		.attr('class', 'ghostCircle');
-
-	d3.select(domNode).attr('class', 'node');
-	d3.select(domNode)
-		.select('.ghostCircle')
-		.attr('pointer-events', '');
-
-	updateTempConnector();
-
-	if (draggingNode !== null) {
-		update(root);
-		centerNode(draggingNode);
-		draggingNode = null;
-	}
-}
-
-export function collapse ({ children, _children }) {
-	if (children) {
-		_children = children;
-		_children.forEach(collapse);
-		children = null;
-	}
-} 
-
-export function expand ({ children, _children }) {
-	if (_children) {
-		children = _children;
-		children.forEach(expand);
-		_children = null;
-	}
-} 
-
-export function overCircle (node) {
-	selectedNode = node;
-	updateTempConnector();
-}
-
-export function outCircle () {
-	selectedNode = null;
-	updateTempConnector();
-}
-
-export function updateTempConnector () {
-
-}
-
-export function centerNode (source) {
-	scale = zoomListener.scale();
-	const x = (-source.y0) * scale + viewerWidth / 2;
-	const y = (-source.x0) * scale + viewerHeight / 2;
-
-	d3.select('g')
-		.transition()
-		.duration(duration)
-		.attr(
-			'transform',
-			`translate(${x}, ${y})scale(${scale})`
-		);
-
-	zoomListener.scale(scale);
-	zoomListener.traslate([ x, y ]);
-}
-
-export function toggleChildren (node) {
-	if (node.children) {
-		node._children = node.children;
-		node.children = null;
-	} else {
-		node.children = node._children;
-		node._children = null;
+	zoom (svgGroup) {
+		// this.svgGroup
+		// 	.attr(
+		// 		'transform',
+		// 		`translate(${d3.event.translate})scale(${d3.event.scale})`
+		// 	);
 	}
 
-	return node;
-}
+	// initiateDrag (draggingNode, domNode) {
+	// 	const bindObj = this;
 
-export function click (data) {
-	if (d3.event.defaultPrevented) {
-		return;
-	}
+	// 	d3.select(domNode)
+	// 		.select('.ghostCircle')
+	// 		.attr('pointer-events', 'none');
 
-	data = toggleChildren(data);
-	update(data);
-	centerNode(data);
-}
+	// 	d3.selectAll('.ghostCircle')
+	// 		.attr('class', 'ghostCircle show');
 
-export function update (source) {
-	const levelWidth = [1];
-	
-	function childCount (level, n) {
-		if (n.children && n.children.length > 0) {
-			if (levelWidth.length <= level + 1) {
-				levelWidth.push(0);
+	// 	d3.select(domNode)
+	// 		.attr('class', 'node activeDrag')
+
+	// 	this.g.selectAll('g.node')
+	// 		.sort((a, b) => 
+	// 			a.id !== draggingNode.id ? 1 : -1
+	// 		);
+
+	// 	if (this.nodes.length > 1) {
+	// 		this.links = this.tree.links(this.nodes);
+	// 		this.nodePaths = this.svgGroup
+	// 			.selectAll('path.link')
+	// 			.data(this.links, (d) => d.target.id)
+	// 			.remove();
+
+	// 		this.nodesExit = this.svgGroup.selectAll('g.node')
+	// 			.data(this.nodes, (d) => d.id)
+	// 			.filter((d, index) =>
+	// 				d.id !== draggingNode
+	// 			)
+	// 			.remove();
+	// 	}
+
+	// 	const parentLink = this.tree.links(bindObj.tree.nodes(draggingNode.parent));
+	// 	this.svgGroup.selectAll('path.link')
+	// 		.filter((d, index) =>
+	// 			d.target.id === draggingNode.id
+	// 		)
+	// 		.remove();
+
+	// 	this.dragStarted = null;
+	// }
+
+	dragListener () {
+		const bindObj = this;
+
+		function dragStarted (node) {
+			if (node === bindObj.root) {
+				return;
 			}
 
-			levelWidth[ level - 1 ] += n.children.length;
-			n.children.forEach((d) => {
-				childCount(level + 1, d);
-			}); 
+			bindObj.dragStarted = true;
+			
+			// node.x0 += d3.event.dy;
+			// node.y0 += d3.event.dx;
+
+			d3.select(this)
+				.raise()
+				.attr('stroke', 'black')
+				// .attr(
+				// 	'transform', 
+				// 	(d) => `translate(${node.y0},${node.x0})`
+				// );
+		}
+
+		function dragged (node) {
+			if (node === bindObj.root) {
+				return;
+			}
+
+			if (bindObj.dragStarted) {
+				bindObj.domNode = this;
+
+				d3.select(this)
+					.select('.ghostCircle')
+					.attr('pointer-events', 'none');
+
+				d3.selectAll('.ghostCircle')
+					.attr('class', 'ghostCircle show');
+
+				d3.select(this)
+					.attr('class', 'node activeDrag');
+
+				const nodePaths = bindObj.g.selectAll('path.link')
+					.data(
+						bindObj.root.links(),
+						(d) => d.target.id
+					)
+					.filter((d, i) => d.target.id === node.id)
+					.remove();
+
+				const nodeExit = bindObj.g.selectAll('g.node')
+					.data(
+						bindObj.root.descendants(),
+						(d) => d.id
+					)
+					.filter((d, i) => d.id === node.id)
+					.remove();
+
+			}
+
+			d3.select(this)
+				.attr('cx', (d) => node.x = d3.event.x)
+				.attr('cy', (d) => node.y = d3.event.y);
+		}
+
+		function dragEnded (node) {
+			if (!bindObj.selectedNode) {
+				return;
+			}
+
+			const index = node
+				.parent
+				.children
+				.indexOf(node);
+
+			if (index > -1) {
+				node.parent
+					.children
+					.splice(index, 1);
+
+				if (node.parent.children.length === 0) {
+					node.parent.children = null;
+				}
+			}
+
+			if (bindObj.selectedNode.children) {
+				bindObj.selectedNode.children.push(node);
+			} else if (bindObj.selectedNode._children) {
+				bindObj.selectedNode._children.push(node);
+			} else {
+				bindObj.selectedNode.children = [ node ];
+			}
+
+			d3.selectAll('.ghostCircle')
+				.attr('class', 'ghostCircle');
+
+			d3.select(this)
+				.attr('stroke', null);
+
+			// this.root = d3.hierarchy(node.parent);
+			bindObj.update(bindObj.root);
+		}
+
+		return {
+			dragStarted,
+			dragged,
+			dragEnded
+		};
+	}
+
+	overCircle (node) {
+		this.selectedNode = node;
+		// this.updateTempConnector();
+	}
+
+	outCircle () {
+		this.selectedNode = null;
+		// this.updateTempConnector();
+	}
+
+	updateTempConnector () {}
+
+	centerNode (source) {
+		const bindObj = this;
+
+		// this.scale = this.zoomListener.scale();
+		// const x = (-source.y0) * this.scale + this.viewerWidth / 2;
+		// const y = (-source.x0) * this.scale + this.viewerHeight / 2;
+
+		// d3.select('g')
+		// 	.transition()
+		// 	.duration(this.duration)
+		// 	.attr(
+		// 		'transform',
+		// 		`translate(${x}, ${y})scale(${bindObj.scale})`
+		// 	);
+
+		// this.zoomListener.scale(this.scale);
+		// this.zoomListener.traslate([ x, y ]);
+	}
+
+	toggleChildren (node) {
+		if (node.children) {
+			node._children = node.children;
+			node.children = null;
+		} else if (node._children) {
+			node.children = node._children;
+			node._children = null;
 		}
 	}
 
-	childCount(0, root);
-	const newHeight = d3.max(levelWidth) * 25;
+	click (data) {
+		if (d3.event.defaultPrevented) {
+			return;
+		}
 
-	tree = tree.size([ newHeight, viewerWidth ]);
+		this.toggleChildren(data);
+		this.update(data);
+	}
 
-	const nodes = tree.nodes(root).reverse();
-	const links = tree.links(nodes);
+	update (source) {
+		const bindObj = this;
 
-	nodes.forEach((d) =>{
-		d.y = d(d.depth * (maxLabelLength * 10));
-	});
-
-	node = svgGroup.selectAll('g.node')
-			.data(
-				nodes, 
-				(d) => d.id || (d.id = ++ i)
-			);
-
-	const nodeEnter = node.enter().append('g')
-		.call(dragListener)
-		.attr({
-			class: 'node',
-			transform: (d) => `translate("${source.y0}", "${source.xo}")`
-		})
-		.on('click', click);
-
-	nodeEnter.append('circle')
-		.attr({
-			r: 0,
-			class: 'nodeCircle'
-		})
-		.style(
-			'fill',
-			(d) => d._children ? 'lightsteelblue' : '#fff'
-		);
-
-	nodeEnter.append('text')
-		.attr({
-			x: (d) => d.children || d._children ? -10 : 10,
-			dy: '.35em',
-			class: 'nodeText',
-			'text-anchor': (d) => d.children || d._children ? 'end' : 'start'
-		})
-		.text((d) => d.name)
-		.style('fill-opacity', 0);
-
-	nodeEnter.append('circle')
-		.attr({
-			class: 'ghostCircle',
-			r: 30,
-			opacity: 0.2,
-			'pointer-events': 'mouseover'
-		})
-		.style('fill', 'red')
-		.on('mouseover', (node) => overCircle(node))
-		.on('mouseout', (node) => outCircle(node));
-
-	node.select('text')
-		.attr({
-			x: (d) => d.children || d._children ? -10 : 10,
-			'text-anchor': (d) => d.children || d._children ? 'end' : 'start'
-		})
-		.text((d) => d.name);
-
-	node.select('circle.nodeCircle')
-		.attr('r', 4.5)
-		.style(
-			'fill', 
-			(d) => d.children ? 'lightsteelblue' : '#fff'
-		);
-
-	const nodeUpdate = node.transition()
-		.duration(duration)
-		.attr(
-			'transform',
-			`translate("${d.y}", "${d.x}")`
-		);
-
-	nodeUpdate.select('text')
-		.style('fill-opacity', 1);
-
-	const nodeExit = node.exit().transition()
-		.duration(duration)
-		.attr(
-			'transform',
-			`translate("${source.y}", "${source.x}")`
-		)
-		.remove();
-
-	nodeExit.select('circle')
-		.attr('r', 0);
-
-	nodeExit.select('text')
-		.style('fill-opacity', 0);
-
-	const link = svgGroup.selectAll('path.link')
-		.data(links,  (d) => d.target.id);
-
-	link.enter().insert('path', 'g')
-		.attr({
-			class: 'link',
-			d: (d) => {
-				const o = {
-					x: source.x0,
-					y: source.y0
-				}
-
-				return diagonal({
-					source: o,
-					target: o
-				});
-			}
+		this.tree(this.root);
+		this.root.each((d) => {
+			d.y = d.depth * 200
 		});
 
-	link.transition()
-		.duration(duration)
-		.attr('d', diagonal);
+		const node = this.g.selectAll('.node')
+			.data(
+				bindObj.root.descendants(), 
+				(d) => d.id || (d.id = ++bindObj.i)
+			);
 
-	link.exit().transition()
-		.duration(duration)
-		.attr('d', (d) => {
-			const o = {
-				x: source.x,
-				y: source.y
-			}
+		const nodeEnter = node
+			.enter()
+			.append('g')
+			.attr('class', 'node')
+			.attr('transform', (d) => `translate(${source.y0}, ${source.x0})`)
+			.on('click', bindObj.click.bind(bindObj))
+			.call(
+				d3.drag()
+				.on('start', bindObj.dragBehavior.dragStarted)
+				.on('drag', bindObj.dragBehavior.dragged)
+				.on('end', bindObj.dragBehavior.dragEnded)
+			);
 
-			return diagonal({
-				source: o,
-				target: o
+		nodeEnter.append('circle')
+			.attr('class', 'nodeCircle')
+			.attr('r', 30)
+			.style(
+				'fill',
+				(d) => d._children ? 'lightsteelblue' : '#fff'
+			);
+
+		nodeEnter.append('text')
+			.attr('x', (d) => d.children || d._children ? -10 : 10)
+			.attr('dy', '.35em')
+			.attr('font-size', '150%')
+			.attr('class', 'nodeText')
+			.attr('text-anchor', (d) => d.children || d._children ? 'end' : 'start')
+			.text((d) => d.data.name)
+			.style('fill-opacity', 0);
+
+		nodeEnter.append('circle')
+			.attr('class', 'ghostCircle')
+			.attr('r', 30)
+			.attr('opacity', 0.2)
+			.style('fill', 'red')
+			.attr('pointer-events', 'mouseover')
+			.on('mouseover', (node) => {
+				bindObj.overCircle(node);
+			})
+			.on('mouseout', (node) => {
+				bindObj.outCircle(node);
 			});
-		})
-		.remove();
 
-	nodes.forEach((d) => {
-		d.x0 = d.x;
-		d.y0 = d.y;
-	});
+		const nodeUpdate = nodeEnter.merge(node);
 
-	const svgGroup = baseSvg.append('g');
+		nodeUpdate.transition()
+			.duration(bindObj.duration)
+			.attr(
+				'transform',
+				(d) => `translate(${d.y},${d.x})`
+			);
 
-	root = source;
-	root.x0 = viewerHeight / 2;
-	root.y0 = 0;
+		nodeUpdate.select('circle.nodeCircle')
+			.attr('r', 4.5)
+			.style(
+				'fill', 
+				(d) => d._children ? 'lightsteelblue' : '#fff'
+			);
 
-	update(root);
-	centerNode(root);
+		nodeUpdate.select('text')
+			.style('fill-opacity', 1);
 
-	const couplingParent1 = tree.nodes(root)
-		.filter((d) => d.name === 'cluster')[0];
+		const nodeExit = node
+			.exit()
+			.transition()
+			.duration(bindObj.duration)
+			.attr(
+				'transform',
+				`translate(${source.y}, ${source.x})`
+			)
+			.remove();
 
-	const couplingChild1 = tree.nodes(root)
-		.filter((d) => d.name === 'JSONConverter')[0];
+		nodeExit.select('circle')
+			.attr('r', 0);
 
-	const multiParents = [
-		{
-			parent: couplingParent1,
-			child: couplingChild1
-		}
-	];
+		nodeExit.select('text')
+			.style('fill-opacity', 0);
 
-	multiParents.forEach((multiPair) => {
-		svgGroup.append('path', 'g')
-			.attr({
-				class: 'additionalParentLink',
-				d: () => {
-					const oTarget = {
-						x: multiPair.parent.x0,
-						y: multiPair.parent.y0
-					};
+		const link = this.g.selectAll('.link')
+    		.data(bindObj.root.links(), (d) => d.target.id);
 
-					const oSource = {
-						x: multiPair.child.x0,
-						y: multiPair.child.y0
-					};
+		const linkEnter = link
+			.enter()
+			.insert('path', 'g')
+			.attr('class', 'link')
+			.attr('d', d3.linkHorizontal()
+				.x((d) => source.y0)
+				.y((d) => source.x0)
+			);
 
-					return diagonal({
-						source: oSource,
-						target: oTarget
-					});	
-				}
-			});
-	});
+		const linkUpdate = linkEnter.merge(link);
+
+		linkUpdate
+			.transition()
+			.duration(bindObj.duration)
+			.attr('d', d3.linkHorizontal()
+				.x((d) => d.y)
+				.y((d) => d.x)
+			);
+
+		link.exit()
+			.transition()
+			.duration(bindObj.duration)
+			.attr('d', d3.linkHorizontal()
+				.x((d) => source.y0)
+				.y((d) => source.x0)
+			)
+			.remove();
+
+		node.each((d) => {
+			d.x0 = d.x;
+			d.y0 = d.y
+		});
+
+		// const couplingParent1 = this.tree.nodes(this.root)
+		// 	.filter((d) => d.name === 'cluster')[0];
+
+		// const couplingChild1 = this.tree.nodes(this.root)
+		// 	.filter((d) => d.name === 'JSONConverter')[0];
+
+		// const multiParents = [
+		// 	{
+		// 		parent: couplingParent1,
+		// 		child: couplingChild1
+		// 	}
+		// ];
+
+		// multiParents.forEach((multiPair) => {
+		// 	svgGroup.append('path', 'g')
+		// 		.attr('class', 'additionalParentLink')
+		// 		.attr('d', () => {
+		// 			const oTarget = {
+		// 				x: multiPair.parent.x0,
+		// 				y: multiPair.parent.y0
+		// 			};
+
+		// 			const oSource = {
+		// 				x: multiPair.child.x0,
+		// 				y: multiPair.child.y0
+		// 			};
+
+		// 			return bindObj.diagonal({
+		// 				source: oSource,
+		// 				target: oTarget
+		// 			});	
+		// 		});
+		// });
+	}
+
 }
-
-
