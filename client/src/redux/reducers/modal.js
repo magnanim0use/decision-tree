@@ -5,20 +5,19 @@ import {
   EDIT_NODE,
   DELETE_NODE,
   MOVE_NODE
-} from '../actions/constants';
+} from "../actions/constants";
 
 const initialState = {
-    id: 1,
-    name: 'New Tree',
-    children: []
+    modalIsOpen: false
 };
 
 export default function (state = initialState, action) {
   switch (action.type) {
     case INIT_CREATE_NODE: {
-      const { parentId } = action.payload;
+      // const { parentId } = action.payload;
       return {
-        ...state
+        ...state,
+        modalIsOpen: true
       };
     }
 

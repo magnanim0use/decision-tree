@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import './Input.css';
-import { addNode } from '../../../redux/actions';
+import { createNode } from '../../../redux/actions';
 
 class AddNode extends React.Component {
   constructor(props) {
@@ -35,5 +35,5 @@ class AddNode extends React.Component {
 
 export default connect(
   null,
-  { addNode }
+  { createNode }
 )(AddNode);

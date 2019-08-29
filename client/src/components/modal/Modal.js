@@ -1,29 +1,82 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import Modal from 'react-modal';
 
-const Modal = ({ nodes }) => {
-  return (
-    <div>
-      <div id='decision-tree-container' />
-      <ul>
-        {nodes && nodes.length
-          ? nodes.map((node, index) => {
-              return <Node key={index} node={node} />;
-            })
-          : 'No nodes, yay!!'}
-      </ul>
-    </div>
-  )
+Modal.setAppElement('#root');
+
+const customStyles = {
+  content : {
+    top                   : '50%',
+    left                  : '50%',
+    right                 : 'auto',
+    bottom                : 'auto',
+    marginRight           : '-50%',
+    transform             : 'translate(-50%, -50%)'
+  }
 };
 
+class ModalComponent extends React.Component {
+  render () {
+    return (
+      <div>
+        <Modal
+          isOpen={this.props.modalIsOpen}
+          style={customStyles}
+          contentLabel="Example Modal"
+        >
+    
+          <h2>Hello</h2>
+          <div>I am a modal</div>
+          <form>
+            <input />
+            <button>tab navigation</button>
+            <button>stays</button>
+            <button>inside</button>
+            <button>the modal</button>
+          </form>
+        </Modal>
+      </div>
+    );
+  }
+  // constructor() {
+  //   super();
+ 
+  //   this.state = {
+  //     modalIsOpen: false
+  //   };
+ 
+  //   this.openModal = this.openModal.bind(this);
+  //   this.afterOpenModal = this.afterOpenModal.bind(this);
+  //   this.closeModal = this.closeModal.bind(this);
+  // }
+ 
+  // openModal() {
+  //   this.setState({modalIsOpen: true});
+  // }
+ 
+  // afterOpenModal() {
+  //   this.subtitle.style.color = '#f00';
+  // }
+ 
+  // closeModal() {
+  //   this.setState({ modalIsOpen: false });
+  // }
+ 
+}
+
 const mapStateToProps = state => {
-  const { 
-    modal = {
-      isOpen
+  const {
+    modal: {
+      modalIsOpen
     }
   } = state;
 
-  return { modal };
+  return {
+    modalIsOpen
+  };
 };
 
-export default connect(mapStateToProps)(Modal);
+export default connect(
+  mapStateToProps
+)(ModalComponent);
+
