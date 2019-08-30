@@ -167,7 +167,6 @@ export default class TreeGraph {
 	}
 
 	initCreateNode (node) {
-		console.log(node)
 		this.dispatchActions({
 			type: 'INIT_CREATE_NODE',
 			payload: {
@@ -181,9 +180,9 @@ export default class TreeGraph {
 	}
 
 	appendNode(node, newParentNode) {
-		const nodeId = node.data.id; //9
-		const originalParentNodeId = node.parent.data.id; //10
-		const newParentNodeId = newParentNode.data.id; //8
+		const nodeId = node.data.id;
+		const originalParentNodeId = node.parent.data.id; 
+		const newParentNodeId = newParentNode.data.id;
 
 		const treeData = {
 			...this.treeData

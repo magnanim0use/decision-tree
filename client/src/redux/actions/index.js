@@ -3,7 +3,8 @@ import {
 	CREATE_NODE,
 	EDIT_NODE,
 	DELETE_NODE,
-	MOVE_NODE
+	MOVE_NODE,
+	CLOSE_MODAL
 } from './constants';
 
 export const initCreateNode = parentId => ({
@@ -41,4 +42,8 @@ export const moveNode = (id, oldParentId, newParentId) => ({
 		oldParentId,
 		newParentId
 	}
+});
+
+export const closeModal = () => ({
+	type: CLOSE_MODAL
 });

@@ -16,67 +16,77 @@ const customStyles = {
 };
 
 class ModalComponent extends React.Component {
-  render () {
-    return (
-      <div>
-        <Modal
-          isOpen={this.props.modalIsOpen}
-          style={customStyles}
-          contentLabel="Example Modal"
-        >
-    
-          <h2>Hello</h2>
-          <div>I am a modal</div>
-          <form>
-            <input />
-            <button>tab navigation</button>
-            <button>stays</button>
-            <button>inside</button>
-            <button>the modal</button>
-          </form>
-        </Modal>
-      </div>
-    );
-  }
-  // constructor() {
-  //   super();
- 
-  //   this.state = {
-  //     modalIsOpen: false
-  //   };
- 
-  //   this.openModal = this.openModal.bind(this);
-  //   this.afterOpenModal = this.afterOpenModal.bind(this);
-  //   this.closeModal = this.closeModal.bind(this);
-  // }
- 
-  // openModal() {
-  //   this.setState({modalIsOpen: true});
-  // }
- 
-  // afterOpenModal() {
-  //   this.subtitle.style.color = '#f00';
-  // }
- 
-  // closeModal() {
-  //   this.setState({ modalIsOpen: false });
-  // }
- 
+    constructor(props) {
+      super(props);
+      this.state = { input: '' };
+    }
+
+    updateInput = event => {
+        this.setState({ 
+            input: event.target.value
+        });
+    }
+
+    render () {
+        return (
+          <div>
+            <Modal
+              isOpen={this.props.modalIsOpen}
+              shouldCloseOnOverlayClick={this.props.shouldCloseOnOverlayClick}
+              style={customStyles}
+              contentLabel="Nodal"
+            >
+
+              <h2>Hello</h2>
+              <div>Create a Node</div>
+              <form>
+                <input
+                    value={this.state.input}
+                    onChange={(input) => this.updateInput(input)}
+                / >
+                <div className="add-node" onClick={() => this.props.createNode(this.state.input)}>
+                  Add Node
+                </div>
+              </form>
+              <button onClick={this.props.closeModal}>close</button>
+            </Modal>
+          </div>
+        );
+    } 
 }
+
+const createNode = (name) => ({
+    type: 'CREATE_NODE',
+    payload: {
+        name
+    }
+});
+
+const closeModal = () => ({
+    type: 'CLOSE_MODAL'
+});
+
+const mapDispatchToProps = (dispatch) => ({
+    createNode: (...args) => dispatch(createNode(...args)),
+    closeModal: () => dispatch(closeModal())
+});
 
 const mapStateToProps = state => {
   const {
     modal: {
-      modalIsOpen
+      modalIsOpen,
+      shouldCloseOnOverlayClick
     }
   } = state;
 
   return {
-    modalIsOpen
+    modalIsOpen,
+    shouldCloseOnOverlayClick
   };
 };
 
 export default connect(
-  mapStateToProps
+  mapStateToProps,
+  mapDispatchToProps
 )(ModalComponent);
 

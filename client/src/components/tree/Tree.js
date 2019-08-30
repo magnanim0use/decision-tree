@@ -29,7 +29,7 @@ const initCreateNode = (parentId) => ({
 const mapDispatchToProps = (dispatch) => {
 	setTimeout (() => {
 		treeGraph = new TreeGraph({ dispatch });
-		treeGraph.render(treeData);
+		treeGraph.render(treeData.data);
 	}, 300);
 
 	return {
@@ -38,15 +38,15 @@ const mapDispatchToProps = (dispatch) => {
 }
 
 const mapStateToProps = state => {
-	// const {
-	// 	tree
-	// } = state;
+	const {
+		tree
+	} = state;
 
-	// setTimeout(() => {
-	// 	treeGraph.render(tree);
-	// 	return state;
-	// }, 500);
-	return state;
+	setTimeout(() => {
+		treeGraph.render(tree);
+		return state;
+	}, 500);
+	// return state;
 };
 
 export default connect(

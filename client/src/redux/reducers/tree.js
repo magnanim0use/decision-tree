@@ -8,9 +8,11 @@ import {
 } from '../actions/constants';
 
 const initialState = {
-    id: 1,
-    name: 'New Tree',
-    children: []
+    data: {
+      id: 1,
+      name: 'New Tree',
+      children: []
+    }
 };
 
 export default function (state = initialState, action) {
@@ -20,6 +22,22 @@ export default function (state = initialState, action) {
       return {
         ...state
       };
+    }
+
+    case CREATE_NODE: {
+      const { name } = action.payload;
+      return {
+        ...state,
+        data: {
+          ...state.data,
+          children: [
+            {
+              id: 2,
+              name
+            }
+          ]
+        }
+      }
     }
 
     default:

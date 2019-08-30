@@ -4,31 +4,33 @@ import {
   INIT_EDIT_NODE,
   EDIT_NODE,
   DELETE_NODE,
-  MOVE_NODE,
-  CLOSE_MODAL
+  MOVE_NODE
 } from "../actions/constants";
 
-const initialState = {
-    modalIsOpen: false,
-    shouldCloseOnOverlayClick: true,
-    formData: {}
+const CONSTANTS = {
+  PENDING: 'PENDING',
+  EDITING: 'EDITING',
+  MOVING: 'MOVING',
+  DELETING: 'DELETING'
 };
+
+const initialState = {
+  status: null
+}
 
 export default function (state = initialState, action) {
   switch (action.type) {
     case INIT_CREATE_NODE: {
-      return {
-        ...state,
-        modalIsOpen: true
-      };
-    }
+      const { parentId } = action.payload;
 
-    case CLOSE_MODAL: {
       return {
         ...state,
-        modalIsOpen: false
+        status: CONSTANTS.PENDING,
+        parentId,
+        children: [],
+        data: {}
       }
-    } 
+    }
 
     default:
       return state;
