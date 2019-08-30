@@ -2,12 +2,14 @@ import * as d3 from 'd3'
 
 export default class TreeGraph {
 
-	constructor () {
+	constructor ({ dispatch }) {
 		const bindObj = this;
 		this.totalNodes = 0;
 		this.maxLabelLength = 0;
 		this.selectedNode = null;
 		this.draggingNode = null;
+
+		this.dispatch = dispatch;
 
 		this.panSpeed = 200;
 		this.panBoundary = 20;
@@ -49,7 +51,7 @@ export default class TreeGraph {
 	}
 
 	render (treeData) {
-		const bindObj = this;
+		this.treeData = treeData;
 
 		this.root = d3.hierarchy(treeData);
 
@@ -77,49 +79,6 @@ export default class TreeGraph {
 		// 		`translate(${d3.event.translate})scale(${d3.event.scale})`
 		// 	);
 	}
-
-	// initiateDrag (draggingNode, domNode) {
-	// 	const bindObj = this;
-
-	// 	d3.select(domNode)
-	// 		.select('.ghostCircle')
-	// 		.attr('pointer-events', 'none');
-
-	// 	d3.selectAll('.ghostCircle')
-	// 		.attr('class', 'ghostCircle show');
-
-	// 	d3.select(domNode)
-	// 		.attr('class', 'node activeDrag')
-
-	// 	this.g.selectAll('g.node')
-	// 		.sort((a, b) => 
-	// 			a.id !== draggingNode.id ? 1 : -1
-	// 		);
-
-	// 	if (this.nodes.length > 1) {
-	// 		this.links = this.tree.links(this.nodes);
-	// 		this.nodePaths = this.svgGroup
-	// 			.selectAll('path.link')
-	// 			.data(this.links, (d) => d.target.id)
-	// 			.remove();
-
-	// 		this.nodesExit = this.svgGroup.selectAll('g.node')
-	// 			.data(this.nodes, (d) => d.id)
-	// 			.filter((d, index) =>
-	// 				d.id !== draggingNode
-	// 			)
-	// 			.remove();
-	// 	}
-
-	// 	const parentLink = this.tree.links(bindObj.tree.nodes(draggingNode.parent));
-	// 	this.svgGroup.selectAll('path.link')
-	// 		.filter((d, index) =>
-	// 			d.target.id === draggingNode.id
-	// 		)
-	// 		.remove();
-
-	// 	this.dragStarted = null;
-	// }
 
 	dragListener () {
 		const bindObj = this;
@@ -161,7 +120,7 @@ export default class TreeGraph {
 				d3.select(this)
 					.attr('class', 'node activeDrag');
 
-				const nodePaths = bindObj.g.selectAll('path.link')
+				bindObj.g.selectAll('path.link')
 					.data(
 						bindObj.root.links(),
 						(d) => d.target.id
@@ -169,7 +128,7 @@ export default class TreeGraph {
 					.filter((d, i) => d.target.id === node.id)
 					.remove();
 
-				const nodeExit = bindObj.g.selectAll('g.node')
+				bindObj.g.selectAll('g.node')
 					.data(
 						bindObj.root.descendants(),
 						(d) => d.id
@@ -177,11 +136,10 @@ export default class TreeGraph {
 					.filter((d, i) => d.id === node.id)
 					.remove();
 
+				d3.select(this)
+					.attr('cx', (d) => node.x = d3.event.x)
+					.attr('cy', (d) => node.y = d3.event.y);
 			}
-
-			d3.select(this)
-				.attr('cx', (d) => node.x = d3.event.x)
-				.attr('cy', (d) => node.y = d3.event.y);
 		}
 
 		function dragEnded (node) {
@@ -189,37 +147,16 @@ export default class TreeGraph {
 				return;
 			}
 
-			const index = node
-				.parent
-				.children
-				.indexOf(node);
-
-			if (index > -1) {
-				node.parent
-					.children
-					.splice(index, 1);
-
-				if (node.parent.children.length === 0) {
-					node.parent.children = null;
-				}
-			}
-
-			if (bindObj.selectedNode.children) {
-				bindObj.selectedNode.children.push(node);
-			} else if (bindObj.selectedNode._children) {
-				bindObj.selectedNode._children.push(node);
-			} else {
-				bindObj.selectedNode.children = [ node ];
-			}
+			bindObj.appendNode(
+				node,
+				bindObj.selectedNode
+			);
 
 			d3.selectAll('.ghostCircle')
 				.attr('class', 'ghostCircle');
 
 			d3.select(this)
 				.attr('stroke', null);
-
-			// this.root = d3.hierarchy(node.parent);
-			bindObj.update(bindObj.root);
 		}
 
 		return {
@@ -227,6 +164,88 @@ export default class TreeGraph {
 			dragged,
 			dragEnded
 		};
+	}
+
+	initCreateNode (node) {
+		this.dispatchActions({
+			type: 'INIT_CREATE_NODE',
+			payload: {
+				parentId: node.data.id
+			}
+		});
+	}
+
+	dispatchActions (action) {
+		this.dispatch(action);
+	}
+
+	appendNode(node, newParentNode) {
+		const nodeId = node.data.id;
+		const originalParentNodeId = node.parent.data.id; 
+		const newParentNodeId = newParentNode.data.id;
+
+		const treeData = {
+			...this.treeData
+		}
+
+		let nodeDataObject;
+		let originalParentNodeDataObject;
+		let newParentNodeDataObject;
+
+		function visit(parent, visitFn, childrenFn) {
+		    if (!parent) return;
+
+		    visitFn(parent);
+
+		    var children = childrenFn(parent);
+		    if (children) {
+		        var count = children.length;
+		        for (var i = 0; i < count; i++) {
+		            visit(children[i], visitFn, childrenFn);
+		        }
+		    }
+		}
+
+		visit(
+			treeData, 
+			(d) => {
+				if (d.id === originalParentNodeId) {
+					originalParentNodeDataObject = d;
+				};
+
+			    if (d.id === newParentNodeId) {
+			    	newParentNodeDataObject = d;
+			    };
+
+			    if (d.id === nodeId) {
+			    	nodeDataObject = d;
+			    }
+			}, 
+			(d) => d.children && d.children.length > 0 ? d.children : null
+		);
+
+		const childNodeIndex = originalParentNodeDataObject
+			.children
+			.indexOf((childNode) => {
+				console.log(childNode)
+				console.log(nodeDataObject)
+				if (childNode.id === nodeDataObject.id) return true;
+			});
+
+		originalParentNodeDataObject
+			.children
+			.splice(childNodeIndex, 1);
+
+		if (newParentNodeDataObject.children && newParentNodeDataObject.children.length) {
+			newParentNodeDataObject
+				.children
+				.push(nodeDataObject);
+		} else {
+			newParentNodeDataObject.children = [ nodeDataObject ];
+		}
+
+		this.render(treeData);
+
 	}
 
 	overCircle (node) {
@@ -242,7 +261,7 @@ export default class TreeGraph {
 	updateTempConnector () {}
 
 	centerNode (source) {
-		const bindObj = this;
+		// const bindObj = this;
 
 		// this.scale = this.zoomListener.scale();
 		// const x = (-source.y0) * this.scale + this.viewerWidth / 2;
@@ -299,6 +318,7 @@ export default class TreeGraph {
 			.attr('class', 'node')
 			.attr('transform', (d) => `translate(${source.y0}, ${source.x0})`)
 			.on('click', bindObj.click.bind(bindObj))
+			.on('dblclick', bindObj.initCreateNode.bind(bindObj))
 			.call(
 				d3.drag()
 				.on('start', bindObj.dragBehavior.dragStarted)
@@ -406,40 +426,6 @@ export default class TreeGraph {
 			d.x0 = d.x;
 			d.y0 = d.y
 		});
-
-		// const couplingParent1 = this.tree.nodes(this.root)
-		// 	.filter((d) => d.name === 'cluster')[0];
-
-		// const couplingChild1 = this.tree.nodes(this.root)
-		// 	.filter((d) => d.name === 'JSONConverter')[0];
-
-		// const multiParents = [
-		// 	{
-		// 		parent: couplingParent1,
-		// 		child: couplingChild1
-		// 	}
-		// ];
-
-		// multiParents.forEach((multiPair) => {
-		// 	svgGroup.append('path', 'g')
-		// 		.attr('class', 'additionalParentLink')
-		// 		.attr('d', () => {
-		// 			const oTarget = {
-		// 				x: multiPair.parent.x0,
-		// 				y: multiPair.parent.y0
-		// 			};
-
-		// 			const oSource = {
-		// 				x: multiPair.child.x0,
-		// 				y: multiPair.child.y0
-		// 			};
-
-		// 			return bindObj.diagonal({
-		// 				source: oSource,
-		// 				target: oTarget
-		// 			});	
-		// 		});
-		// });
 	}
 
 }

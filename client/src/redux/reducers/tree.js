@@ -1,22 +1,43 @@
-import { 
-  ADD_NODE 
-} from "../actions/constants";
+import {
+  INIT_CREATE_NODE,
+  CREATE_NODE,
+  INIT_EDIT_NODE,
+  EDIT_NODE,
+  DELETE_NODE,
+  MOVE_NODE
+} from '../actions/constants';
 
 const initialState = {
-  nodes: []
+    data: {
+      id: 1,
+      name: 'New Tree',
+      children: []
+    }
 };
 
 export default function (state = initialState, action) {
   switch (action.type) {
-    case ADD_NODE: {
-      const { content } = action.payload;
+    case INIT_CREATE_NODE: {
+      const { parentId } = action.payload;
+      return {
+        ...state
+      };
+    }
+
+    case CREATE_NODE: {
+      const { name } = action.payload;
       return {
         ...state,
-        nodes: [
-          ...state.nodes,
-          content
-        ]
-      };
+        data: {
+          ...state.data,
+          children: [
+            {
+              id: 2,
+              name
+            }
+          ]
+        }
+      }
     }
 
     default:
