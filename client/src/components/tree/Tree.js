@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import './Tree.css';
 
 import {
 	INIT_CREATE_NODE

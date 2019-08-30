@@ -2,7 +2,7 @@ import React from 'react';
 import Header from './components/header/Header';
 import Tree from './components/tree/Tree';
 import Modal from './components/modal/Modal';
-import './App.css';
+import './DecisionTree.css';
 
 export default function DecisionTree() {
   return (
@@ -13,25 +13,3 @@ export default function DecisionTree() {
     </div>
   );
 }
-
-/*
-  <Header>
-    <NodeInput>
-      <InputForm>
-        <Input>
-        <SubmitButton>
-    <UserAuthorization>
-      <Modal>
-        <Login>
-        <Signup>
-  <DecisionTree>
-    <TimelineAxis>
-    <Node>
-  <NodeModal>
-    <EditOptions>
-      <DeleteNode>
-      <DuplicateNode>
-    <NodeContents>
-      <TextContents>
-      <ImageContents>
-*/
