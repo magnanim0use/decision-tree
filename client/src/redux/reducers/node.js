@@ -5,7 +5,7 @@ import {
   EDIT_NODE,
   DELETE_NODE,
   MOVE_NODE
-} from "../actions/constants";
+} from '../actions/constants';
 
 const CONSTANTS = {
   PENDING: 'PENDING',

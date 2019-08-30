@@ -1,4 +1,7 @@
 import * as d3 from 'd3'
+import {
+	findNodeById
+} from '../../helpers';
 
 export default class TreeGraph {
 
@@ -188,49 +191,13 @@ export default class TreeGraph {
 			...this.treeData
 		}
 
-		let nodeDataObject;
-		let originalParentNodeDataObject;
-		let newParentNodeDataObject;
-
-		function visit(parent, visitFn, childrenFn) {
-		    if (!parent) return;
-
-		    visitFn(parent);
-
-		    var children = childrenFn(parent);
-		    if (children) {
-		        var count = children.length;
-		        for (var i = 0; i < count; i++) {
-		            visit(children[i], visitFn, childrenFn);
-		        }
-		    }
-		}
-
-		visit(
-			treeData, 
-			(d) => {
-				if (d.id === originalParentNodeId) {
-					originalParentNodeDataObject = d;
-				};
-
-			    if (d.id === newParentNodeId) {
-			    	newParentNodeDataObject = d;
-			    };
-
-			    if (d.id === nodeId) {
-			    	nodeDataObject = d;
-			    }
-			}, 
-			(d) => d.children && d.children.length > 0 ? d.children : null
-		);
+		const nodeDataObject = findNodeById(treeData, nodeId);
+		const originalParentNodeDataObject = findNodeById(treeData, originalParentNodeId);
+		const newParentNodeDataObject = findNodeById(treeData, newParentNodeId)
 
 		const childNodeIndex = originalParentNodeDataObject
 			.children
-			.indexOf((childNode) => {
-				console.log(childNode)
-				console.log(nodeDataObject)
-				if (childNode.id === nodeDataObject.id) return true;
-			});
+			.indexOf((childNode) => childNode.id === nodeDataObject.id);
 
 		originalParentNodeDataObject
 			.children

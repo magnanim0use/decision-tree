@@ -44,7 +44,10 @@ class ModalComponent extends React.Component {
                     value={this.state.input}
                     onChange={(input) => this.updateInput(input)}
                 / >
-                <div className="add-node" onClick={() => this.props.createNode(this.state.input)}>
+                <div className="add-node" onClick={() => this.props.createNode({
+                    input: this.state.input,
+                    parentId: this.props.parentId
+                })}>
                   Add Node
                 </div>
               </form>
@@ -55,10 +58,11 @@ class ModalComponent extends React.Component {
     } 
 }
 
-const createNode = (name) => ({
+const createNode = ({ name, parentId }) => ({
     type: 'CREATE_NODE',
     payload: {
-        name
+        name,
+        parentId
     }
 });
 
@@ -76,12 +80,17 @@ const mapStateToProps = state => {
     modal: {
       modalIsOpen,
       shouldCloseOnOverlayClick
+    },
+    node: {
+      status,
+      parentId
     }
   } = state;
 
   return {
     modalIsOpen,
-    shouldCloseOnOverlayClick
+    shouldCloseOnOverlayClick,
+    parentId
   };
 };
 

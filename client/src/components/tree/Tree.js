@@ -33,20 +33,20 @@ const mapDispatchToProps = (dispatch) => {
 	}, 300);
 
 	return {
-		initCreateNode: () => dispatch(initCreateNode())
+		initCreateNode: (...args) => dispatch(initCreateNode(...args))
 	}
 }
 
 const mapStateToProps = state => {
-	const {
-		tree
-	} = state;
+	// const {
+	// 	tree
+	// } = state;
 
-	setTimeout(() => {
-		treeGraph.render(tree);
-		return state;
-	}, 500);
-	// return state;
+	// setTimeout(() => {
+	// 	treeGraph.render(tree);
+	// 	return state;
+	// }, 500);
+	return state;
 };
 
 export default connect(
