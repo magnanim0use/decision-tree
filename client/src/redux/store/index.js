@@ -4,15 +4,13 @@ import {
 } from 'redux';
 
 import rootReducer from '../reducers';
-import { 
-	loggerMiddleware, 
-	// apiMiddleware 
-} from '../middleware';
+import loggerMiddleware from '../middleware/logger';
+import treeMiddleware from '../middleware/tree';
 
 export default createStore(
 	rootReducer,
 	applyMiddleware(
-		// apiMiddleware,
-		loggerMiddleware
+		loggerMiddleware,
+		treeMiddleware
 	)
 );

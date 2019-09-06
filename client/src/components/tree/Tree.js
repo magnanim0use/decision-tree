@@ -3,11 +3,14 @@ import { connect } from 'react-redux';
 import './Tree.css';
 
 import {
+	hasTreeChanged
+} from '../../helpers';
+
+import {
 	INIT_CREATE_NODE
 } from '../../redux/actions';
 
 import TreeGraph from './render';
-const treeData = require('./data.json');
 
 let treeGraph;
 
@@ -26,14 +29,24 @@ const initCreateNode = (parentId) => ({
 	}
 });
 
+const moveNode = (nodeId, oldParentId, newParentId) => ({
+	type: 'MOVE_NODE',
+	payload: {
+		nodeId,
+		oldParentId,
+		newParentId
+	}
+});
+
 const mapDispatchToProps = (dispatch) => {
 	setTimeout (() => {
 		treeGraph = new TreeGraph({ dispatch });
-		treeGraph.render(treeData.data);
+		treeGraph.render({ data: {} });
 	}, 300);
 
 	return {
-		initCreateNode: () => dispatch(initCreateNode())
+		initCreateNode: (...args) => dispatch(initCreateNode(...args)),
+		moveNode: (...args) => dispatch(moveNode(...args))
 	}
 }
 
@@ -46,7 +59,6 @@ const mapStateToProps = state => {
 		treeGraph.render(tree);
 		return state;
 	}, 500);
-	// return state;
 };
 
 export default connect(
