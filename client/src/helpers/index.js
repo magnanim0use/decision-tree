@@ -8,6 +8,11 @@ export function findNodeById (treeData, id) {
 				data
 			} = d;
 
+			/*
+				If D3 data (raw data processed using D3), each node will have a data property. 
+				If it is just the raw data, it will be a regular object.
+			*/
+
 			if (data && data.id === id) {
 				node = d;
 			} else if (d.id === id) {

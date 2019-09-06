@@ -1,6 +1,7 @@
 import {
 	INIT_CREATE_NODE,
 	CREATE_NODE,
+	INIT_EDIT_NODE,
 	EDIT_NODE,
 	DELETE_NODE,
 	MOVE_NODE,
@@ -14,17 +15,27 @@ export const initCreateNode = parentId => ({
 	}
 });
 
-export const createNode = (parentId) => ({
+export const createNode = ({ name, parentId }) => ({
 	type: CREATE_NODE,
 	payload: {
+		name,
 		parentId
 	}
 });
 
-export const editNode = id => ({
-	type: EDIT_NODE,
+export const initEditNode = id => ({
+	type: INIT_EDIT_NODE,
 	payload: {
 		id
+	}
+});
+
+export const editNode = ( { id, name, description }) => ({
+	type: EDIT_NODE,
+	payload: {
+		id,
+		name,
+		description
 	}
 });
 

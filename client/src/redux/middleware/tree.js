@@ -6,7 +6,8 @@ import {
 import {
 	CREATE_NODE,
 	MOVE_NODE,
-	EDIT_NODE
+	INIT_EDIT_NODE
+	// EDIT_NODE
 } from '../actions/constants';
 
 const treeMiddleware = store => next => action => {
@@ -36,6 +37,18 @@ const treeMiddleware = store => next => action => {
 			parentNode.children && parentNode.children.length ? 
 			  parentNode.children.push(newNode) :
 			  parentNode.children = [ newNode ];
+
+			return next(action);
+		}
+
+		case INIT_EDIT_NODE: {
+			const {
+				payload: {
+					id
+				}
+			} = action;
+
+			const nodeDataObject = findNodeById(data, id);
 
 			return next(action);
 		}

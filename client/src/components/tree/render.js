@@ -1,7 +1,4 @@
 import * as d3 from 'd3'
-import {
-	findNodeById
-} from '../../helpers';
 
 import {
 	INIT_CREATE_NODE,
@@ -61,7 +58,7 @@ export default class TreeGraph {
 	render (treeData) {
 		const {
 			data,
-			activeNode
+			// activeNode
 		} = treeData;
 
 		this.treeData = data;
@@ -149,17 +146,17 @@ export default class TreeGraph {
 		}
 
 		function dragEnded (node) {
+			d3.selectAll('.ghostCircle')
+				.attr('class', 'ghostCircle');
+
 			if (!bindObj.selectedNode) {
-				return;
+				return bindObj.update(node);
 			}
 
 			bindObj.moveNode(
 				node,
 				bindObj.selectedNode
 			);
-
-			d3.selectAll('.ghostCircle')
-				.attr('class', 'ghostCircle');
 
 			d3.select(this)
 				.attr('stroke', null);
@@ -177,7 +174,6 @@ export default class TreeGraph {
 	}
 
 	initCreateNode (node) {
-		console.log(node)
 		this.dispatchActions({
 			type: INIT_CREATE_NODE,
 			payload: {
@@ -195,6 +191,10 @@ export default class TreeGraph {
 				newParentId: newParentNode.data.id
 			}
 		});
+	}
+
+	initEditNode(node) {
+		console.log('INIT_EDIT_NODE');
 	}
 
 	overCircle (node) {
@@ -238,14 +238,37 @@ export default class TreeGraph {
 		}
 	}
 
-	click (data) {
-		console.log('CLICKED NODE:', data)
+	click (node) {
 		if (d3.event.defaultPrevented) {
 			return;
 		}
 
-		this.toggleChildren(data);
-		this.update(data);
+		// this.toggleChildren(node);
+		// this.update(node);
+
+		this.dispatchActions({
+			type: 'INIT_EDIT_NODE',
+			payload: {
+				id: node.data.id
+			}
+		});
+	}
+
+	mouseDown (node) {
+		const bindObj = this;
+		this.mouseIsHeld = true;
+		setTimeout(() => {
+			if (!this.mouseIsHeld) {
+				return;
+			}
+
+			bindObj.initEditNode(node);
+		}, 300);
+	}
+
+	mouseUp (node) {
+		console.log('mouseUp!')
+		this.mouseIsHeld = false;
 	}
 
 	update (source) {
@@ -269,12 +292,14 @@ export default class TreeGraph {
 			.attr('transform', (d) => `translate(${source.y0}, ${source.x0})`)
 			.on('click', bindObj.click.bind(bindObj))
 			.on('dblclick', bindObj.initCreateNode.bind(bindObj))
-			.call(
-				d3.drag()
-				.on('start', bindObj.dragBehavior.dragStarted)
-				.on('drag', bindObj.dragBehavior.dragged)
-				.on('end', bindObj.dragBehavior.dragEnded)
-			);
+			// .on('mouseup', bindObj.mouseUp.bind(bindObj))
+			// .on('mousedown', bindObj.mouseDown.bind(bindObj))
+			// .call(
+			// 	d3.drag()
+			// 	.on('start', bindObj.dragBehavior.dragStarted)
+			// 	.on('drag', bindObj.dragBehavior.dragged)
+			// 	.on('end', bindObj.dragBehavior.dragEnded)
+			// );
 
 		nodeEnter.append('circle')
 			.attr('class', 'nodeCircle')

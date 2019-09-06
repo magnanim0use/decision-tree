@@ -2,6 +2,14 @@ import React from 'react';
 import { connect } from 'react-redux';
 import Modal from 'react-modal';
 
+import {
+  createNode,
+  editNode,
+  closeModal
+} from '../../redux/actions';
+
+import fields from './fields.json';
+
 Modal.setAppElement('#root');
 
 const customStyles = {
@@ -21,10 +29,10 @@ class ModalComponent extends React.Component {
       this.state = { input: '' };
     }
 
-    updateInput = event => {
-        this.setState({ 
-            input: event.target.value
-        });
+    updateInput = (input, inputName) => {
+      this.setState({
+        name: input.target.value 
+      })
     }
 
     render () {
@@ -37,47 +45,54 @@ class ModalComponent extends React.Component {
               contentLabel="Nodal"
             >
 
-              <h2>Hello</h2>
-              <div>Create a Node</div>
+              <h2>{ fields[ this.props.mode ] ? fields[ this.props.mode ].title : 'Hello' }</h2>
               <form>
-                <input
-                    value={this.state.input}
-                    onChange={(input) => this.updateInput(input)}
-                / >
-                <div className="add-node" onClick={() => this.props.createNode({
-                    name: this.state.input,
-                    parentId: this.props.parentId
-                })}>
-                  Add Node
-                </div>
+                { 
+                  fields[ this.props.mode ] ? fields[this.props.mode].inputs.map((inputValues) => {
+                    return (
+                      <div>
+                        <h4>{ inputValues.title }</h4>
+                        <input
+                          type="text"
+                          value={ this.state[inputValues.name] }
+                          onChange={ (input) => this.updateInput(input, inputValues.name) }
+                        >
+                        </input>
+                      </div>
+                    );
+                  }) : 'Hi'                  
+                }
+                {
+                  <div  
+                    onClick={
+                      () => this.props.mode ? this.props.editNode({
+                        name: this.state.input,
+                        description: this.state.description,
+                        parentId: this.props.parentId
+                      }
+                    ) : "Hi"
+                  }>
+                    Add / Update Node
+                  </div>
+                }
               </form>
-              <button onClick={this.props.closeModal}>close</button>
+              <button onClick={ this.props.closeModal }>close</button>
             </Modal>
           </div>
         );
     } 
 }
 
-const createNode = ({ name, parentId }) => ({
-    type: 'CREATE_NODE',
-    payload: {
-        name,
-        parentId
-    }
-});
-
-const closeModal = () => ({
-    type: 'CLOSE_MODAL'
-});
-
 const mapDispatchToProps = (dispatch) => ({
     createNode: (...args) => dispatch(createNode(...args)),
+    editNode: (...args) => dispatch(editNode(...args)),
     closeModal: () => dispatch(closeModal())
 });
 
 const mapStateToProps = state => {
   const {
     modal: {
+      mode,
       modalIsOpen,
       shouldCloseOnOverlayClick
     },
@@ -86,16 +101,17 @@ const mapStateToProps = state => {
     }
   } = state;
 
-  if (!activeNode) {
+  if (!mode || !activeNode) {
     return;
   }
 
   const {
-    status,
+    // status,
     parentId
   } = activeNode;
 
   return {
+    mode,
     modalIsOpen,
     shouldCloseOnOverlayClick,
     parentId

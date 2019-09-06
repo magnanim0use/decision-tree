@@ -2,17 +2,18 @@ import {
   INIT_CREATE_NODE,
   CREATE_NODE,
   INIT_EDIT_NODE,
-  EDIT_NODE,
-  DELETE_NODE,
+  // EDIT_NODE,
+  // DELETE_NODE,
   MOVE_NODE
 } from '../actions/constants';
 
 const CONSTANTS = {
-  PENDING: 'PENDING',
+  PENDING_CREATE: 'PENDING',
   CREATE: 'CREATE',
-  EDITING: 'EDIT',
-  MOVING: 'MOVE',
-  DELETING: 'DELETE'
+  PENDING_EDIT: 'PENDING_EDIT',
+  EDIT: 'EDIT',
+  MOVE: 'MOVE',
+  DELETE: 'DELETE'
 };
 
 export default function (state = initialState, action) {
@@ -22,6 +23,7 @@ export default function (state = initialState, action) {
 
       return {
         ...state,
+        shouldUpdate: false,
         activeNode: {
           status: CONSTANTS.PENDING,
           parentId
@@ -29,10 +31,22 @@ export default function (state = initialState, action) {
       }
     }
 
-    case CREATE_NODE: {
-      const { parentId } = action.payload;
+    case INIT_EDIT_NODE: {
+      const { id } = action.payload; 
+
       return {
         ...state,
+        shouldUpdate: false,
+        activeNode: {
+          status: CONSTANTS.PENDING_EDIT
+        }
+      }
+    }
+
+    case CREATE_NODE: {
+      return {
+        ...state,
+        shouldUpdate: true,
         activeNode: {
           ...state.activeNode,
           status: CONSTANTS.CREATE
@@ -41,8 +55,15 @@ export default function (state = initialState, action) {
     }
 
     case MOVE_NODE: {
+      const { id } = action.payload;
+
       return {
-        ...state
+        ...state,
+        shouldUpdate: true,
+        activeNode: {
+          id,
+          status: CONSTANTS.MOVE
+        }
       }
     }
 
@@ -53,6 +74,7 @@ export default function (state = initialState, action) {
 
 const initialState = {   
     "activeNode": null,
+    "shouldUpdate": true,
     "data": {
       "name": "A",
       "id": 1,

@@ -1,0 +1,26 @@
+{
+	"CREATE": {
+		"title": "Create A Node",
+		"inputs": [
+			{
+				"name": "Name",
+				"description": "Description"
+			}
+		],
+		"onSubmit": "createNode"
+	},
+	"EDIT": {
+		"title": "Edit A Node",
+		"inputs": [
+			{
+				"title": "Name",
+				"name": "name"
+			}, 
+			{
+				"title": "Description",
+				"name": "description"
+			}
+		],
+		"onSubmit": "editNode"
+	}
+}
