@@ -55,18 +55,8 @@ const mapStateToProps = state => {
 		tree
 	} = state;
 
-	console.log(state)
-
 	setTimeout(() => {
-		// if (!hasTreeChanged) {
-		// 	return state;
-		// }
-		// if (['PENDING', 'CREATE', 'UPDATE'].indexOf(node.action) !== -1) {
-		// 	treeGraph.render(node);
-		// } else {
-			treeGraph.render(tree);
-		// }
-
+		treeGraph.render(tree);
 		return state;
 	}, 500);
 };

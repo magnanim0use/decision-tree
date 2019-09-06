@@ -55,7 +55,7 @@ const treeMiddleware = store => next => action => {
 
 			const childNodeIndex = originalParentNodeDataObject
 				.children
-				.indexOf((childNode) => childNode.id === nodeDataObject.id);
+				.findIndex((childNode) => childNode.id === nodeDataObject.id);
 
 			originalParentNodeDataObject
 				.children
