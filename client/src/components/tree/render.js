@@ -3,6 +3,11 @@ import {
 	findNodeById
 } from '../../helpers';
 
+import {
+	INIT_CREATE_NODE,
+	MOVE_NODE
+} from '../../redux/actions/constants';
+
 export default class TreeGraph {
 
 	constructor ({ dispatch }) {
@@ -22,7 +27,7 @@ export default class TreeGraph {
 
 		this.viewerWidth = document.body.clientWidth;
 		// this.viewerHeight = document.body.clientHeight;
-		this.viewerHeight = 1200;
+		this.viewerHeight = 400;
 
 		this.tree = d3.tree().size([
 			bindObj.viewerHeight,
@@ -54,13 +59,15 @@ export default class TreeGraph {
 	}
 
 	render (treeData) {
-		this.treeData = treeData;
+		const {
+			data,
+			activeNode
+		} = treeData;
 
-		this.root = d3.hierarchy(treeData);
-
+		this.treeData = data;
+		this.root = d3.hierarchy(this.treeData);
 		this.root.x0 = this.viewerHeight / 2; //work with this
 		this.root.y0 = 100; //should be dynamic
-
 		this.update(this.root);
 		// this.centerNode(this.root);
 	}
@@ -101,15 +108,11 @@ export default class TreeGraph {
 				.attr('stroke', 'black')
 				// .attr(
 				// 	'transform', 
-				// 	(d) => `translate(${node.y0},${node.x0})`
+				// 	(d) => `translate(${d.y0},${d.x0})`
 				// );
 		}
 
 		function dragged (node) {
-			if (node === bindObj.root) {
-				return;
-			}
-
 			if (bindObj.dragStarted) {
 				bindObj.domNode = this;
 
@@ -150,7 +153,7 @@ export default class TreeGraph {
 				return;
 			}
 
-			bindObj.appendNode(
+			bindObj.moveNode(
 				node,
 				bindObj.selectedNode
 			);
@@ -169,50 +172,29 @@ export default class TreeGraph {
 		};
 	}
 
+	dispatchActions (action) {
+		this.dispatch(action);
+	}
+
 	initCreateNode (node) {
+		console.log(node)
 		this.dispatchActions({
-			type: 'INIT_CREATE_NODE',
+			type: INIT_CREATE_NODE,
 			payload: {
 				parentId: node.data.id
 			}
 		});
 	}
 
-	dispatchActions (action) {
-		this.dispatch(action);
-	}
-
-	appendNode(node, newParentNode) {
-		const nodeId = node.data.id;
-		const originalParentNodeId = node.parent.data.id; 
-		const newParentNodeId = newParentNode.data.id;
-
-		const treeData = {
-			...this.treeData
-		}
-
-		const nodeDataObject = findNodeById(treeData, nodeId);
-		const originalParentNodeDataObject = findNodeById(treeData, originalParentNodeId);
-		const newParentNodeDataObject = findNodeById(treeData, newParentNodeId)
-
-		const childNodeIndex = originalParentNodeDataObject
-			.children
-			.indexOf((childNode) => childNode.id === nodeDataObject.id);
-
-		originalParentNodeDataObject
-			.children
-			.splice(childNodeIndex, 1);
-
-		if (newParentNodeDataObject.children && newParentNodeDataObject.children.length) {
-			newParentNodeDataObject
-				.children
-				.push(nodeDataObject);
-		} else {
-			newParentNodeDataObject.children = [ nodeDataObject ];
-		}
-
-		this.render(treeData);
-
+	moveNode(node, newParentNode) {
+		this.dispatchActions({
+			type: MOVE_NODE,
+			payload: {
+				id: node.data.id,
+				oldParentId: node.parent.data.id,
+				newParentId: newParentNode.data.id
+			}
+		});
 	}
 
 	overCircle (node) {
@@ -257,6 +239,7 @@ export default class TreeGraph {
 	}
 
 	click (data) {
+		console.log('CLICKED NODE:', data)
 		if (d3.event.defaultPrevented) {
 			return;
 		}
@@ -295,7 +278,7 @@ export default class TreeGraph {
 
 		nodeEnter.append('circle')
 			.attr('class', 'nodeCircle')
-			.attr('r', 30)
+			.attr('r', 10)
 			.style(
 				'fill',
 				(d) => d._children ? 'lightsteelblue' : '#fff'
@@ -312,7 +295,7 @@ export default class TreeGraph {
 
 		nodeEnter.append('circle')
 			.attr('class', 'ghostCircle')
-			.attr('r', 30)
+			.attr('r', 20)
 			.attr('opacity', 0.2)
 			.style('fill', 'red')
 			.attr('pointer-events', 'mouseover')
@@ -333,7 +316,7 @@ export default class TreeGraph {
 			);
 
 		nodeUpdate.select('circle.nodeCircle')
-			.attr('r', 4.5)
+			.attr('r', 6)
 			.style(
 				'fill', 
 				(d) => d._children ? 'lightsteelblue' : '#fff'

@@ -3,11 +3,14 @@ import { connect } from 'react-redux';
 import './Tree.css';
 
 import {
+	hasTreeChanged
+} from '../../helpers';
+
+import {
 	INIT_CREATE_NODE
 } from '../../redux/actions';
 
 import TreeGraph from './render';
-const treeData = require('./data.json');
 
 let treeGraph;
 
@@ -26,27 +29,46 @@ const initCreateNode = (parentId) => ({
 	}
 });
 
+const moveNode = (nodeId, oldParentId, newParentId) => ({
+	type: 'MOVE_NODE',
+	payload: {
+		nodeId,
+		oldParentId,
+		newParentId
+	}
+});
+
 const mapDispatchToProps = (dispatch) => {
 	setTimeout (() => {
 		treeGraph = new TreeGraph({ dispatch });
-		treeGraph.render(treeData.data);
+		treeGraph.render({ data: {} });
 	}, 300);
 
 	return {
-		initCreateNode: (...args) => dispatch(initCreateNode(...args))
+		initCreateNode: (...args) => dispatch(initCreateNode(...args)),
+		moveNode: (...args) => dispatch(moveNode(...args))
 	}
 }
 
 const mapStateToProps = state => {
-	// const {
-	// 	tree
-	// } = state;
+	const {
+		tree
+	} = state;
 
-	// setTimeout(() => {
-	// 	treeGraph.render(tree);
-	// 	return state;
-	// }, 500);
-	return state;
+	console.log(state)
+
+	setTimeout(() => {
+		// if (!hasTreeChanged) {
+		// 	return state;
+		// }
+		// if (['PENDING', 'CREATE', 'UPDATE'].indexOf(node.action) !== -1) {
+		// 	treeGraph.render(node);
+		// } else {
+			treeGraph.render(tree);
+		// }
+
+		return state;
+	}, 500);
 };
 
 export default connect(

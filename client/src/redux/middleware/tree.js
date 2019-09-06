@@ -1,5 +1,6 @@
 import {
-	findNodeById
+	findNodeById,
+	getMaxId
 } from '../../helpers';
 
 import {
@@ -9,9 +10,14 @@ import {
 } from '../actions/constants';
 
 const treeMiddleware = store => next => action => {
+	const {
+		tree: {
+			data
+		}
+	} = store.getState();
+
 	switch (action.type) {
-		case CREATE_NODE:
-			console.log('CREATE_NODE action:', action);
+		case CREATE_NODE: {
 			const {
 				payload: {
 					name,
@@ -19,15 +25,11 @@ const treeMiddleware = store => next => action => {
 				}
 			} = action;
 
-			const {
-				tree: {
-					data
-				}
-			} = store.getState();
-
 			const parentNode = findNodeById(data, parentId);
+			const maxId = getMaxId(data);
+
 			const newNode = {
-				id: 100,
+				id: maxId + 1,
 				name
 			};
 
@@ -35,12 +37,43 @@ const treeMiddleware = store => next => action => {
 			  parentNode.children.push(newNode) :
 			  parentNode.children = [ newNode ];
 
-			console.log(parentNode);
+			return next(action);
+		}
 
-			next(action);
+		case MOVE_NODE: {
+			const {
+				payload: {
+					id,
+					oldParentId,
+					newParentId
+				}
+			} = action;
+
+			const nodeDataObject = findNodeById(data, id);
+			const originalParentNodeDataObject = findNodeById(data, oldParentId);
+			const newParentNodeDataObject = findNodeById(data, newParentId)
+
+			const childNodeIndex = originalParentNodeDataObject
+				.children
+				.indexOf((childNode) => childNode.id === nodeDataObject.id);
+
+			originalParentNodeDataObject
+				.children
+				.splice(childNodeIndex, 1);
+
+			if (newParentNodeDataObject.children && newParentNodeDataObject.children.length) {
+				newParentNodeDataObject
+					.children
+					.push(nodeDataObject);
+			} else {
+				newParentNodeDataObject.children = [ nodeDataObject ];
+			}
+
+			return next(action);
+		}
 
 		default:
-			next(action);
+			return next(action);
 	}
 }
 
