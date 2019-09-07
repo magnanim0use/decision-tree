@@ -32,12 +32,17 @@ export default function (state = initialState, action) {
     }
 
     case INIT_EDIT_NODE: {
-      const { id } = action.payload; 
+      const { 
+        id,
+        name,
+        description 
+      } = action.payload; 
 
       return {
         ...state,
         shouldUpdate: false,
         activeNode: {
+          id,
           status: CONSTANTS.PENDING_EDIT
         }
       }

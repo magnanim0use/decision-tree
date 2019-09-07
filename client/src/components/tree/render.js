@@ -243,15 +243,15 @@ export default class TreeGraph {
 			return;
 		}
 
-		// this.toggleChildren(node);
-		// this.update(node);
+		this.toggleChildren(node);
+		this.update(node);
 
-		this.dispatchActions({
-			type: 'INIT_EDIT_NODE',
-			payload: {
-				id: node.data.id
-			}
-		});
+		// this.dispatchActions({
+		// 	type: 'INIT_EDIT_NODE',
+		// 	payload: {
+		// 		id: node.data.id
+		// 	}
+		// });
 	}
 
 	mouseDown (node) {
@@ -333,7 +333,8 @@ export default class TreeGraph {
 
 		const nodeUpdate = nodeEnter.merge(node);
 
-		nodeUpdate.transition()
+		nodeUpdate
+			.transition()
 			.duration(bindObj.duration)
 			.attr(
 				'transform',
@@ -341,13 +342,23 @@ export default class TreeGraph {
 			);
 
 		nodeUpdate.select('circle.nodeCircle')
-			.attr('r', 6)
+			.attr('r',
+				(d) => d._children ? d._children.length * 4 : 6
+			)
 			.style(
 				'fill', 
 				(d) => d._children ? 'lightsteelblue' : '#fff'
 			);
 
-		nodeUpdate.select('text')
+		nodeUpdate
+			.select('text')
+			.transition()
+			.attr('x', 
+				(d) => 
+					d.children ? -10 :
+					d._children ? (-10 - (d._children.length * 2)) : 
+					10
+			)
 			.style('fill-opacity', 1);
 
 		const nodeExit = node
@@ -360,10 +371,12 @@ export default class TreeGraph {
 			)
 			.remove();
 
-		nodeExit.select('circle')
+		nodeExit
+			.select('circle')
 			.attr('r', 0);
 
-		nodeExit.select('text')
+		nodeExit
+			.select('text')
 			.style('fill-opacity', 0);
 
 		const link = this.g.selectAll('.link')
