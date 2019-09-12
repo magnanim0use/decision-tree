@@ -2,7 +2,7 @@ import {
   INIT_CREATE_NODE,
   CREATE_NODE,
   INIT_EDIT_NODE,
-  // EDIT_NODE,
+  EDIT_NODE,
   // DELETE_NODE,
   MOVE_NODE
 } from '../actions/constants';
@@ -43,6 +43,8 @@ export default function (state = initialState, action) {
         shouldUpdate: false,
         activeNode: {
           id,
+          name,
+          description,
           status: CONSTANTS.PENDING_EDIT
         }
       }
@@ -55,6 +57,24 @@ export default function (state = initialState, action) {
         activeNode: {
           ...state.activeNode,
           status: CONSTANTS.CREATE
+        }
+      }
+    }
+
+    case EDIT_NODE: {
+      const {
+        name,
+        description
+      } = action.payload;
+
+      return {
+        ...state,
+        shouldUpdate: true,
+        activeNode: {
+          ...state.activeNode,
+          status: CONSTANTS.EDIT,
+          name,
+          description
         }
       }
     }

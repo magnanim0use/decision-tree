@@ -9,8 +9,6 @@ export default class TreeGraph {
 
 	constructor ({ dispatch }) {
 		const bindObj = this;
-		this.totalNodes = 0;
-		this.maxLabelLength = 0;
 		this.selectedNode = null;
 		this.draggingNode = null;
 
@@ -194,7 +192,12 @@ export default class TreeGraph {
 	}
 
 	initEditNode(node) {
-		console.log('INIT_EDIT_NODE');
+		this.dispatchActions({
+			type: 'INIT_EDIT_NODE',
+			payload: {
+				id: node.data.id
+			}
+		});
 	}
 
 	overCircle (node) {
@@ -245,13 +248,10 @@ export default class TreeGraph {
 
 		this.toggleChildren(node);
 		this.update(node);
+	}
 
-		// this.dispatchActions({
-		// 	type: 'INIT_EDIT_NODE',
-		// 	payload: {
-		// 		id: node.data.id
-		// 	}
-		// });
+	dblClick (node) {
+		this.initEditNode(node);
 	}
 
 	mouseDown (node) {
@@ -291,7 +291,7 @@ export default class TreeGraph {
 			.attr('class', 'node')
 			.attr('transform', (d) => `translate(${source.y0}, ${source.x0})`)
 			.on('click', bindObj.click.bind(bindObj))
-			.on('dblclick', bindObj.initCreateNode.bind(bindObj))
+			.on('dblclick', bindObj.dblClick.bind(bindObj))
 			// .on('mouseup', bindObj.mouseUp.bind(bindObj))
 			// .on('mousedown', bindObj.mouseDown.bind(bindObj))
 			// .call(

@@ -48,13 +48,17 @@ class Form extends React.Component {
               {
                 <div  
                   onClick={
-                    () => this.props.mode ? this.props.editNode({
+                    () => this.props.mode === 'EDIT' ? this.props.editNode({
                       id: this.props.formData.id,
                       name: this.state.name,
                       description: this.state.description,
                       parentId: this.props.formData.parentId
                     }
-                  ) : "Hi"
+                  ) : this.props.mode === 'CREATE' ? this.props.createNode({
+                      parentId: this.props.formData.parentId,
+                      name: this.state.name
+                  }) :
+                    "Hi"
                 }>
                   Add / Update Node
                 </div>
@@ -95,6 +99,7 @@ const mapStateToProps = state => {
     mode,
     formData: {
       id,
+      parentId,
       name,
       description
     }

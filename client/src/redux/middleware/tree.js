@@ -6,8 +6,8 @@ import {
 import {
 	CREATE_NODE,
 	MOVE_NODE,
-	INIT_EDIT_NODE
-	// EDIT_NODE
+	INIT_EDIT_NODE,
+	EDIT_NODE
 } from '../actions/constants';
 
 const treeMiddleware = store => next => action => {
@@ -25,6 +25,8 @@ const treeMiddleware = store => next => action => {
 					parentId
 				}
 			} = action;
+
+			console.log(parentId)
 
 			const parentNode = findNodeById(data, parentId);
 			const maxId = getMaxId(data);
@@ -49,6 +51,28 @@ const treeMiddleware = store => next => action => {
 			} = action;
 
 			const nodeDataObject = findNodeById(data, id);
+
+			return next(action);
+		}
+
+		case EDIT_NODE: {
+			const {
+				payload: {
+					id,
+					name,
+					description
+				}
+			} = action;
+
+			const nodeDataObject = findNodeById(data, id);
+
+			Object.assign(
+				nodeDataObject,
+				{
+					name,
+					description
+				}
+			);
 
 			return next(action);
 		}
