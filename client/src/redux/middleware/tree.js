@@ -7,7 +7,8 @@ import {
 	CREATE_NODE,
 	MOVE_NODE,
 	INIT_EDIT_NODE,
-	EDIT_NODE
+	EDIT_NODE,
+	DELETE_NODE
 } from '../actions/constants';
 
 const treeMiddleware = store => next => action => {
@@ -60,7 +61,8 @@ const treeMiddleware = store => next => action => {
 				payload: {
 					id,
 					name,
-					description
+					description,
+					status
 				}
 			} = action;
 
@@ -70,9 +72,31 @@ const treeMiddleware = store => next => action => {
 				nodeDataObject,
 				{
 					name,
-					description
+					description,
+					status
 				}
 			);
+
+			return next(action);
+		}
+
+		case DELETE_NODE: {
+			const {
+				payload: {
+					id,
+					parentId
+				}
+			} = action;
+
+			const parentNodeDataObject = findNodeById(data, parentId);
+
+			const deletedNodeIndex = parentNodeDataObject
+				.children
+				.findIndex((childNode) => childNode.id === id);
+
+			parentNodeDataObject
+				.children
+				.splice(deletedNodeIndex, 1);
 
 			return next(action);
 		}

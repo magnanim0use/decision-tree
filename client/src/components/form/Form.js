@@ -3,7 +3,8 @@ import { connect } from 'react-redux';
 
 import {
   createNode,
-  editNode
+  editNode,
+  deleteNode
 } from '../../redux/actions';
 
 import fields from './fields.json';
@@ -49,18 +50,44 @@ class Form extends React.Component {
                 <div  
                   onClick={
                     () => this.props.mode === 'EDIT' ? this.props.editNode({
-                      id: this.props.formData.id,
-                      name: this.state.name,
-                      description: this.state.description,
-                      parentId: this.props.formData.parentId
-                    }
-                  ) : this.props.mode === 'CREATE' ? this.props.createNode({
-                      parentId: this.props.formData.parentId,
-                      name: this.state.name
-                  }) :
-                    "Hi"
-                }>
+                        id: this.props.formData.id,
+                        name: this.state.name,
+                        description: this.state.description
+                      }
+                    ) : this.props.mode === 'CREATE' ? this.props.createNode({
+                        parentId: this.props.formData.parentId,
+                        name: this.state.name
+                    }) :
+                      "Hi"
+                  }
+                >
                   Add / Update Node
+                </div>
+              }
+              {
+                <div
+                  onClick={
+                    () => this.props.editNode({
+                      id: this.props.formData.id,
+                      status: 'COMPLETE',
+                      name: this.state.name,
+                      description: this.state.description
+                    })
+                  }
+                >
+                  Mark As Complete
+                </div>
+              }
+              {
+                <div
+                  onClick={
+                    () => this.props.deleteNode({
+                      id: this.props.formData.id,
+                      parentId: this.props.formData.parentId
+                    })
+                  }
+                >
+                  Delete
                 </div>
               }
             </form>
@@ -71,7 +98,8 @@ class Form extends React.Component {
 
 const mapDispatchToProps = (dispatch) => ({
     createNode: (...args) => dispatch(createNode(...args)),
-    editNode: (...args) => dispatch(editNode(...args))
+    editNode: (...args) => dispatch(editNode(...args)),
+    deleteNode: (...args) => dispatch(deleteNode(...args))
 });
 
 const mapStateToProps = state => {

@@ -3,7 +3,7 @@ import {
   CREATE_NODE,
   INIT_EDIT_NODE,
   EDIT_NODE,
-  // DELETE_NODE,
+  DELETE_NODE,
   CLOSE_MODAL
 } from '../actions/constants';
 
@@ -30,6 +30,7 @@ export default function (state = initialState, action) {
 
     case CREATE_NODE:
     case EDIT_NODE:
+    case DELETE_NODE:
     case CLOSE_MODAL: {
       return {
         ...state,

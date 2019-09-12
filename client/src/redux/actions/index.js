@@ -30,19 +30,21 @@ export const initEditNode = id => ({
 	}
 });
 
-export const editNode = ( { id, name, description }) => ({
+export const editNode = ({ id, name, description, status }) => ({
 	type: EDIT_NODE,
 	payload: {
 		id,
 		name,
-		description
+		description,
+		status
 	}
 });
 
-export const deleteNode = id => ({
+export const deleteNode = ({ id, parentId }) => ({
 	type: DELETE_NODE,
 	payload: {
-		id
+		id,
+		parentId
 	}
 });
 

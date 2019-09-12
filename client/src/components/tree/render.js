@@ -2,6 +2,7 @@ import * as d3 from 'd3'
 
 import {
 	INIT_CREATE_NODE,
+	INIT_EDIT_NODE,
 	MOVE_NODE
 } from '../../redux/actions/constants';
 
@@ -193,9 +194,10 @@ export default class TreeGraph {
 
 	initEditNode(node) {
 		this.dispatchActions({
-			type: 'INIT_EDIT_NODE',
+			type: INIT_EDIT_NODE,
 			payload: {
-				id: node.data.id
+				id: node.data.id,
+				parentId: node.parent.data.id
 			}
 		});
 	}
@@ -294,19 +296,21 @@ export default class TreeGraph {
 			.on('dblclick', bindObj.dblClick.bind(bindObj))
 			// .on('mouseup', bindObj.mouseUp.bind(bindObj))
 			// .on('mousedown', bindObj.mouseDown.bind(bindObj))
-			// .call(
-			// 	d3.drag()
-			// 	.on('start', bindObj.dragBehavior.dragStarted)
-			// 	.on('drag', bindObj.dragBehavior.dragged)
-			// 	.on('end', bindObj.dragBehavior.dragEnded)
-			// );
+			.call(
+				d3.drag()
+				.on('start', bindObj.dragBehavior.dragStarted)
+				.on('drag', bindObj.dragBehavior.dragged)
+				.on('end', bindObj.dragBehavior.dragEnded)
+			);
 
 		nodeEnter.append('circle')
 			.attr('class', 'nodeCircle')
 			.attr('r', 10)
 			.style(
 				'fill',
-				(d) => d._children ? 'lightsteelblue' : '#fff'
+				(d) => d.data.status === 'COMPLETE' ? '#3CB371' :
+					d._children ? 'lightsteelblue' : 
+					'#fff'
 			);
 
 		nodeEnter.append('text')
@@ -346,8 +350,10 @@ export default class TreeGraph {
 				(d) => d._children ? d._children.length * 4 : 6
 			)
 			.style(
-				'fill', 
-				(d) => d._children ? 'lightsteelblue' : '#fff'
+				'fill',
+				(d) => d.data.status === 'COMPLETE' ? '#3CB371' :
+					d._children ? 'lightsteelblue' : 
+					'#fff'
 			);
 
 		nodeUpdate
