@@ -6,9 +6,9 @@ import {
 import {
 	CREATE_NODE,
 	MOVE_NODE,
-	INIT_EDIT_NODE,
 	EDIT_NODE,
-	DELETE_NODE
+	DELETE_NODE,
+	TOGGLE_NODE
 } from '../actions/constants';
 
 const treeMiddleware = store => next => action => {
@@ -27,8 +27,6 @@ const treeMiddleware = store => next => action => {
 				}
 			} = action;
 
-			console.log(parentId)
-
 			const parentNode = findNodeById(data, parentId);
 			const maxId = getMaxId(data);
 
@@ -41,17 +39,12 @@ const treeMiddleware = store => next => action => {
 			  parentNode.children.push(newNode) :
 			  parentNode.children = [ newNode ];
 
-			return next(action);
-		}
-
-		case INIT_EDIT_NODE: {
-			const {
-				payload: {
-					id
-				}
-			} = action;
-
-			const nodeDataObject = findNodeById(data, id);
+			 Object.assign(
+			 	action.payload,
+			 	{
+			 		id: newNode.id
+			 	}
+			 );
 
 			return next(action);
 		}
@@ -101,17 +94,41 @@ const treeMiddleware = store => next => action => {
 			return next(action);
 		}
 
+		case TOGGLE_NODE: {
+			const {
+				payload: {
+					id
+				}
+			} = action;
+
+			const nodeDataObject = findNodeById(data, id);
+			const { 
+				children,
+				_children
+			} = nodeDataObject;
+
+			if (children && children.length) {
+				nodeDataObject._children = children;
+				nodeDataObject.children = null;
+			} else if (_children && _children.length) {
+				nodeDataObject.children = _children;
+				nodeDataObject._children = null;
+			}
+
+			return next(action);
+		}
+
 		case MOVE_NODE: {
 			const {
 				payload: {
 					id,
-					oldParentId,
+					parentId,
 					newParentId
 				}
 			} = action;
 
 			const nodeDataObject = findNodeById(data, id);
-			const originalParentNodeDataObject = findNodeById(data, oldParentId);
+			const originalParentNodeDataObject = findNodeById(data, parentId);
 			const newParentNodeDataObject = findNodeById(data, newParentId)
 
 			const childNodeIndex = originalParentNodeDataObject

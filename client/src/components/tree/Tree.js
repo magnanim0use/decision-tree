@@ -1,16 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import './Tree.css';
-
-import {
-	INIT_CREATE_NODE,
-	MOVE_NODE
-} from '../../redux/actions/constants';
-
 import {
 	initCreateNode,
 	initEditNode,
-	moveNode
+	moveNode,
+	toggleNode
 } from '../../redux/actions';
 
 import TreeGraph from './render';
@@ -34,7 +29,8 @@ const mapDispatchToProps = (dispatch) => {
 	return {
 		initCreateNode: (...args) => dispatch(initCreateNode(...args)),
 		initEditNode: (...args) => dispatch(initEditNode(...args)),
-		moveNode: (...args) => dispatch(moveNode(...args))
+		moveNode: (...args) => dispatch(moveNode(...args)),
+		toggleNode: (...args) => dispatch(toggleNode(...args))
 	}
 }
 

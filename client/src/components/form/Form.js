@@ -13,10 +13,8 @@ class Form extends React.Component {
     constructor(props) {
       super(props);
       this.state = { 
-        // name: this.props.formData.name,
-        // description: this.props.formData.description
-        name: 'Placeholder name',
-        description: 'Placeholder description'
+        name: this.props.formData.name || 'Placeholder Name',
+        description: this.props.formData.description || 'Placeholder Description'
       };
     }
 

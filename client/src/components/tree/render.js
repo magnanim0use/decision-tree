@@ -3,8 +3,13 @@ import * as d3 from 'd3'
 import {
 	INIT_CREATE_NODE,
 	INIT_EDIT_NODE,
-	MOVE_NODE
+	MOVE_NODE,
+	TOGGLE_NODE
 } from '../../redux/actions/constants';
+
+import {
+	getChildCount
+} from '../../helpers';
 
 export default class TreeGraph {
 
@@ -35,55 +40,39 @@ export default class TreeGraph {
 			.attr('width', bindObj.viewerWidth)
 			.attr('height', bindObj.viewerHeight)
 			.attr('class', 'overlay');
-			// .call(bindObj.zoomListener);
 
 		this.g = d3.select('#decision-tree-container svg')
 			.append('g')
 			.attr('transform', 'translate(80,0)');
 
 		this.dragBehavior = this.dragListener();
-
-		// this.zoomListener = d3.zoom()
-		// 	.scaleExtent([
-		// 		0.1,
-		// 		3
-		// 	])
-		// 	.on(
-		// 		'zoom',
-		// 		bindObj.zoom(this.svgGroup)
-		// 	);
 	}
 
 	render (treeData) {
 		const {
 			data,
-			// activeNode
+			activeNode
 		} = treeData;
 
 		this.treeData = data;
+
+		// if (activeNode) {
+		// 	let nodeToUpdate;
+		// 	switch (activeNode.activeState) {
+		// 		case 'CREATE':
+		// 			const newTree = d3.hierarchy(data);
+		// 			return this.update(newTree);
+
+		// 		case 'EDIT':
+		// 			nodeToUpdate = findNodeById(this.root, activeNode.id);
+		// 			return this.update(nodeToUpdate);
+		// 	}
+		// }
+
 		this.root = d3.hierarchy(this.treeData);
 		this.root.x0 = this.viewerHeight / 2; //work with this
 		this.root.y0 = 100; //should be dynamic
 		this.update(this.root);
-		// this.centerNode(this.root);
-	}
-
-	// sortTree (tree) {
-	// 	this.tree.sort((a, b) => 
-	// 		b.name.toLowerCase() < a.name.toLowerCase() ? 1 : -1
-	// 	);
-	// }
-
-	//pan (node, direction, panSpeed = 200, panBoundary = 20) {
-	// 	const translateCoords = transform();
-	// }
-
-	zoom (svgGroup) {
-		// this.svgGroup
-		// 	.attr(
-		// 		'transform',
-		// 		`translate(${d3.event.translate})scale(${d3.event.scale})`
-		// 	);
 	}
 
 	dragListener () {
@@ -95,17 +84,10 @@ export default class TreeGraph {
 			}
 
 			bindObj.dragStarted = true;
-			
-			// node.x0 += d3.event.dy;
-			// node.y0 += d3.event.dx;
 
 			d3.select(this)
 				.raise()
-				.attr('stroke', 'black')
-				// .attr(
-				// 	'transform', 
-				// 	(d) => `translate(${d.y0},${d.x0})`
-				// );
+				.attr('stroke', 'black');
 		}
 
 		function dragged (node) {
@@ -137,10 +119,14 @@ export default class TreeGraph {
 					)
 					.filter((d, i) => d.id === node.id)
 					.remove();
-
-				d3.select(this)
-					.attr('cx', (d) => node.x = d3.event.x)
-					.attr('cy', (d) => node.y = d3.event.y);
+					// .attr('cx', (d) => node.x = d3.event.x)
+					// .attr('cy', (d) => node.y = d3.event.y)
+					// .attr('cx', (d) => node.y0 = d3.event.x)
+					// .attr('cy', (d) => node.x0 = d3.event.y)
+					// .attr(
+					// 	'transform', 
+					// 	(d) => `translate(${d.y0 - 115},${d.x0 + 120})`
+					// );
 			}
 		}
 
@@ -186,7 +172,7 @@ export default class TreeGraph {
 			type: MOVE_NODE,
 			payload: {
 				id: node.data.id,
-				oldParentId: node.parent.data.id,
+				parentId: node.parent.data.id,
 				newParentId: newParentNode.data.id
 			}
 		});
@@ -204,43 +190,19 @@ export default class TreeGraph {
 
 	overCircle (node) {
 		this.selectedNode = node;
-		// this.updateTempConnector();
 	}
 
 	outCircle () {
 		this.selectedNode = null;
-		// this.updateTempConnector();
 	}
 
-	updateTempConnector () {}
-
-	centerNode (source) {
-		// const bindObj = this;
-
-		// this.scale = this.zoomListener.scale();
-		// const x = (-source.y0) * this.scale + this.viewerWidth / 2;
-		// const y = (-source.x0) * this.scale + this.viewerHeight / 2;
-
-		// d3.select('g')
-		// 	.transition()
-		// 	.duration(this.duration)
-		// 	.attr(
-		// 		'transform',
-		// 		`translate(${x}, ${y})scale(${bindObj.scale})`
-		// 	);
-
-		// this.zoomListener.scale(this.scale);
-		// this.zoomListener.traslate([ x, y ]);
-	}
-
-	toggleChildren (node) {
-		if (node.children) {
-			node._children = node.children;
-			node.children = null;
-		} else if (node._children) {
-			node.children = node._children;
-			node._children = null;
-		}
+	toggle (node) {
+		this.dispatchActions({
+			type: TOGGLE_NODE,
+			payload: {
+				id: node.data.id
+			}
+		});
 	}
 
 	click (node) {
@@ -248,12 +210,11 @@ export default class TreeGraph {
 			return;
 		}
 
-		this.toggleChildren(node);
-		this.update(node);
+		this.toggle(node);
 	}
 
 	dblClick (node) {
-		this.initEditNode(node);
+		this.initCreateNode(node);
 	}
 
 	mouseDown (node) {
@@ -304,21 +265,26 @@ export default class TreeGraph {
 			);
 
 		nodeEnter.append('circle')
+			.attr('r', 0)
+			.transition()
+			// .attr('r', 6)
+			.attr('r',
+				(d) => getChildCount(d.data) ? getChildCount(d.data) * 4 : 6
+			)
 			.attr('class', 'nodeCircle')
-			.attr('r', 10)
 			.style(
 				'fill',
 				(d) => d.data.status === 'COMPLETE' ? '#3CB371' :
-					d._children ? 'lightsteelblue' : 
+					d.data._children ? 'lightsteelblue' : 
 					'#fff'
 			);
 
 		nodeEnter.append('text')
-			.attr('x', (d) => d.children || d._children ? -10 : 10)
+			.attr('x', (d) => d.children || d.data._children ? -10 : 10)
 			.attr('dy', '.35em')
 			.attr('font-size', '150%')
 			.attr('class', 'nodeText')
-			.attr('text-anchor', (d) => d.children || d._children ? 'end' : 'start')
+			.attr('text-anchor', (d) => d.children || d.data._children ? 'end' : 'start')
 			.text((d) => d.data.name)
 			.style('fill-opacity', 0);
 
@@ -347,12 +313,12 @@ export default class TreeGraph {
 
 		nodeUpdate.select('circle.nodeCircle')
 			.attr('r',
-				(d) => d._children ? d._children.length * 4 : 6
+				(d) => getChildCount(d.data) ? getChildCount(d.data) * 4 : 6
 			)
 			.style(
 				'fill',
 				(d) => d.data.status === 'COMPLETE' ? '#3CB371' :
-					d._children ? 'lightsteelblue' : 
+					d.data._children ? 'lightsteelblue' : 
 					'#fff'
 			);
 
@@ -362,7 +328,7 @@ export default class TreeGraph {
 			.attr('x', 
 				(d) => 
 					d.children ? -10 :
-					d._children ? (-10 - (d._children.length * 2)) : 
+					d.data._children ? (-10 - (d.data._children.length * 2)) : 
 					10
 			)
 			.style('fill-opacity', 1);
@@ -386,7 +352,10 @@ export default class TreeGraph {
 			.style('fill-opacity', 0);
 
 		const link = this.g.selectAll('.link')
-    		.data(bindObj.root.links(), (d) => d.target.id);
+    		.data(
+    			bindObj.root.links(), 
+    			(d) => d.target.id
+    		);
 
 		const linkEnter = link
 			.enter()

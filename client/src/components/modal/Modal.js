@@ -11,10 +11,6 @@ import {
 Modal.setAppElement('#root');
 
 class ModalComponent extends React.Component {
-    constructor(props) {
-      super(props);
-    }
-
     render () {
         return (
           <div>

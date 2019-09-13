@@ -14,7 +14,7 @@ const MODES = {
 }
 
 const initialState = {
-    mode: null,
+    mode: MODES.DEFAULT,
     formData: {}
 };
 

@@ -6,8 +6,7 @@
 				"name": "name",
 				"description": "Description"
 			}
-		],
-		"onSubmit": "createNode"
+		]
 	},
 	"EDIT": {
 		"title": "Edit A Node",
@@ -20,7 +19,6 @@
 				"title": "Description",
 				"name": "description"
 			}
-		],
-		"onSubmit": "editNode"
+		]
 	}
 }

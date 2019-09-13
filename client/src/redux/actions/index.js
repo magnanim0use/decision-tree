@@ -5,7 +5,8 @@ import {
 	EDIT_NODE,
 	DELETE_NODE,
 	MOVE_NODE,
-	CLOSE_MODAL
+	CLOSE_MODAL,
+	TOGGLE_NODE
 } from './constants';
 
 export const initCreateNode = parentId => ({
@@ -48,13 +49,18 @@ export const deleteNode = ({ id, parentId }) => ({
 	}
 });
 
-export const moveNode = (id, oldParentId, newParentId) => ({
+export const moveNode = (id, parentId, newParentId) => ({
 	type: MOVE_NODE,
 	payload: {
 		id,
-		oldParentId,
+		parentId,
 		newParentId
 	}
+});
+
+export const toggleNode = ({ id }) => ({
+	type: TOGGLE_NODE,
+	payload: { id }
 });
 
 export const closeModal = () => ({

@@ -4,7 +4,8 @@ import {
   INIT_EDIT_NODE,
   EDIT_NODE,
   DELETE_NODE,
-  MOVE_NODE
+  MOVE_NODE,
+  TOGGLE_NODE
 } from '../actions/constants';
 
 const CONSTANTS = {
@@ -13,7 +14,8 @@ const CONSTANTS = {
   PENDING_EDIT: 'PENDING_EDIT',
   EDIT: 'EDIT',
   MOVE: 'MOVE',
-  DELETE: 'DELETE'
+  DELETE: 'DELETE',
+  TOGGLE: 'TOGGLE'
 };
 
 export default function (state = initialState, action) {
@@ -53,12 +55,15 @@ export default function (state = initialState, action) {
     }
 
     case CREATE_NODE: {
+      const { id } = action.payload;
+
       return {
         ...state,
         shouldUpdate: true,
         activeNode: {
           ...state.activeNode,
-          activeState: CONSTANTS.CREATE
+          activeState: CONSTANTS.CREATE,
+          id
         }
       }
     }
@@ -103,6 +108,19 @@ export default function (state = initialState, action) {
         activeNode: {
           ...state.activeNode,
           activeState: CONSTANTS.DELETE
+        }
+      }
+    }
+
+    case TOGGLE_NODE: {
+      const { id } = action.payload;
+
+      return {
+        ...state,
+        shouldUpdate: true,
+        activeNode: {
+          id,
+          activeState: CONSTANTS.TOGGLE
         }
       }
     }
