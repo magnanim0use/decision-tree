@@ -1,8 +1,44 @@
-Modal {
-	top: '50%';
-	left: '50%';
-	right: 'auto';
-	bottom: 'auto';
-	marginRight: '-50%';
-	transform: 'translate(-50%, -50%)';
+.Modal {
+	position: relative; 
+	top: 40px; 
+	margin: auto;
+	bottom: 40px; 
+	border: 1px solid lightsteelblue; 
+	background: rgb(255, 255, 255); 
+	overflow: auto; 
+	border-radius: 10px; 
+	outline: none; 
+	padding: 20px;
+	width: 400px;
+}
+
+.CloseButton {
+	cursor: pointer;
+	position: absolute;
+	right: 32px;
+	top: 32px;
+	width: 32px;
+	height: 32px;
+	opacity: 0.3;
+}
+
+.CloseButton:hover {
+	opacity: 1;
+}
+
+.CloseButton:before, .CloseButton:after {
+	position: absolute;
+	left: 15px;
+	content: ' ';
+	height: 33px;
+	width: 2px;
+	background-color: #333;
+}
+
+.CloseButton:before {
+  transform: rotate(45deg);
+}
+
+.CloseButton:after {
+  transform: rotate(-45deg);
 }

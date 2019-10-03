@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import Modal from 'react-modal';
+import ReactModal from 'react-modal';
 import Form from '../form/Form';
 import './Modal.css';
 
@@ -8,20 +8,20 @@ import {
   closeModal
 } from '../../redux/actions';
 
-Modal.setAppElement('#root');
+ReactModal.setAppElement('#root');
 
 class ModalComponent extends React.Component {
     render () {
         return (
           <div>
-            <Modal
+            <ReactModal
               isOpen={this.props.modalIsOpen}
-              shouldCloseOnOverlayClick={this.props.shouldCloseOnOverlayClick}
-              contentLabel="Nodal"
+              shouldCloseOnOverlayClick={true}
+              className='Modal'
             >
+              <div className='CloseButton' onClick={ this.props.closeModal } />
               <Form />
-              <div onClick={ this.props.closeModal }>Close</div>
-            </Modal>
+            </ReactModal>
           </div>
         );
     } 
@@ -36,15 +36,8 @@ const mapStateToProps = state => {
     modal: {
       modalIsOpen,
       shouldCloseOnOverlayClick
-    },
-    tree: {
-      activeNode
     }
   } = state;
-
-  if (!activeNode) {
-    return state;
-  }
 
   return {
     modalIsOpen,

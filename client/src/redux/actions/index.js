@@ -25,10 +25,11 @@ export const initCreateNode = parentId => ({
 	}
 });
 
-export const createNode = ({ name, parentId }) => ({
+export const createNode = ({ name, parentId, description }) => ({
 	type: CREATE_NODE,
 	payload: {
 		name,
+		description,
 		parentId
 	}
 });

@@ -23,6 +23,7 @@ const treeMiddleware = store => next => action => {
 			const {
 				payload: {
 					name,
+					description,
 					parentId
 				}
 			} = action;
@@ -32,7 +33,8 @@ const treeMiddleware = store => next => action => {
 
 			const newNode = {
 				id: maxId + 1,
-				name
+				name,
+				description
 			};
 
 			parentNode.children && parentNode.children.length ? 

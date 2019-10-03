@@ -1,0 +1,16 @@
+.FormInput h4 {
+	font-family: "Courier New", Courier, monospace;
+	margin: 10px 0 5px 0;
+	padding: 0;
+}
+
+.FormTitle {
+	font-family: "Courier New", Courier, monospace;
+	margin: 10px 0;
+}
+
+.FormButton {
+	border-radius: 4px;
+	cursor: pointer;
+	margin: 20px 10px 0 0;
+}

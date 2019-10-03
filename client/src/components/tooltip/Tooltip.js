@@ -16,18 +16,16 @@ class TooltipComponent extends React.Component {
         } = this.props;
 
         const styles = {
-          position: 'absolute',
           display: isActive ? 'block' : 'none',
           left: `${y + 120}px`,
-          top: `${x - 15}px`,
-          pointer: 'cursor'
+          top: `${x - 28}px`
         };
 
         return (
-          <div style={ styles }>
+          <div className='Tooltip' style={ styles }>
             <button onClick={ 
               () => this.props.initCreateNode(this.props.id) 
-            }>Create</button>
+            }>Create Subnode</button>
 
             <button onClick={
               () => this.props.initEditNode(this.props.id)
@@ -47,14 +45,14 @@ const mapDispatchToProps = (dispatch) => ({
     toggleNode: (...args) => dispatch(toggleNode(...args))
 });
 
-const mapStateToProps = state => {
+const mapStateToProps = (state, ownProps) => {
   const {
     tree: {
       activeNode
     }
   } = state;
 
-  if (activeNode && activeNode.activeState === 'SHOW_OPTIONS') {
+  if (activeNode && activeNode.activeState === 'SHOW_OPTIONS' && activeNode.id !== ownProps.id) {
     const {
       id,
       position: {

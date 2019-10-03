@@ -3,8 +3,12 @@
 		"title": "Create A Node",
 		"inputs": [
 			{
-				"name": "name",
-				"description": "Description"
+				"title": "Name",
+				"name": "name"
+			}, 
+			{
+				"title": "Description",
+				"name": "description"
 			}
 		]
 	},

@@ -1,5 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import './Form.css';
+
+import {
+  findNodeById
+} from '../../helpers';
 
 import {
   createNode,
@@ -13,8 +18,8 @@ class Form extends React.Component {
     constructor(props) {
       super(props);
       this.state = { 
-        name: this.props.formData.name || 'Placeholder Name',
-        description: this.props.formData.description || 'Placeholder Description'
+        name: this.props.formData.name || 'Name of Node',
+        description: this.props.formData.description || 'Description of Node'
       };
     }
 
@@ -25,69 +30,84 @@ class Form extends React.Component {
     }
 
     render () {
+        const fieldMode = fields[ this.props.mode ];
+
         return (
-          <div>
-            <h2>{ fields[ this.props.mode ] ? fields[ this.props.mode ].title : 'Hello' }</h2>
+          <div className='Form'>
+            <h2 className='FormTitle'>{ fieldMode.title }</h2>
             <form>
               { 
-                fields[ this.props.mode ] ? fields[this.props.mode].inputs.map((inputValues) => {
+                fieldMode.inputs.map((inputValues) => {
                   return (
-                    <div>
+                    <div className='FormInput'>
                       <h4>{ inputValues.title }</h4>
                       <input
                         type="text"
                         value={ this.state[inputValues.name] }
-                        onChange={ (input) => this.updateInput(input, inputValues.name) }
+                        onChange={ 
+                          (input) => this.updateInput(input, inputValues.name) 
+                        }
                       >
                       </input>
                     </div>
                   );
-                }) : 'Hi'                  
+                })                 
               }
+
               {
-                <div  
-                  onClick={
-                    () => this.props.mode === 'EDIT' ? this.props.editNode({
-                        id: this.props.formData.id,
-                        name: this.state.name,
-                        description: this.state.description
+                this.props.mode === 'CREATE' ?
+                  <div>
+                    <button className='FormButton' 
+                      onClick={
+                        () => this.props.createNode({
+                            parentId: this.props.formData.parentId,
+                            name: this.state.name,
+                            description: this.state.description
+                        })
                       }
-                    ) : this.props.mode === 'CREATE' ? this.props.createNode({
-                        parentId: this.props.formData.parentId,
-                        name: this.state.name
-                    }) :
-                      "Hi"
-                  }
-                >
-                  Add / Update Node
-                </div>
-              }
-              {
-                <div
-                  onClick={
-                    () => this.props.editNode({
-                      id: this.props.formData.id,
-                      status: 'COMPLETE',
-                      name: this.state.name,
-                      description: this.state.description
-                    })
-                  }
-                >
-                  Mark As Complete
-                </div>
-              }
-              {
-                <div
-                  onClick={
-                    () => this.props.deleteNode({
-                      id: this.props.formData.id,
-                      parentId: this.props.formData.parentId
-                    })
-                  }
-                >
-                  Delete
-                </div>
-              }
+                    >
+                      Create Node
+                    </button>
+                  </div>
+                :
+                this.props.mode === 'EDIT' ?
+                  <div>
+                    <button className='FormButton' 
+                      onClick={
+                        () => this.props.editNode({
+                            id: this.props.formData.id,
+                            name: this.state.name,
+                            description: this.state.description
+                        })
+                      }
+                    > 
+                      Update Node
+                    </button>
+                    <button className='FormButton' 
+                      onClick={
+                        () => this.props.editNode({
+                          id: this.props.formData.id,
+                          status: 'COMPLETE',
+                          name: this.state.name,
+                          description: this.state.description
+                        })
+                      }
+                    >
+                      Mark As Complete
+                    </button>
+                    <button className='FormButton' 
+                      onClick={
+                        () => this.props.deleteNode({
+                          id: this.props.formData.id,
+                          parentId: this.props.formData.parentId
+                        })
+                      }
+                    >
+                      Delete
+                    </button> 
+                  </div>
+                : null  
+              }                 
             </form>
           </div>
         );
@@ -106,7 +126,8 @@ const mapStateToProps = state => {
       mode
     },
     tree: {
-      activeNode
+      activeNode,
+      data
     }
   } = state;
 
@@ -116,10 +137,14 @@ const mapStateToProps = state => {
 
   const {
     id,
-    parentId,
-    name,
-    description
+    parentId
   } = activeNode;
+
+  const {
+    name,
+    description,
+    status
+  } = findNodeById(data, id);
 
   return {
     mode,
