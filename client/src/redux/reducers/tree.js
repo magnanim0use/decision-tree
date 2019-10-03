@@ -1,18 +1,22 @@
 import {
+  SHOW_NODE_OPTIONS,
   INIT_CREATE_NODE,
   CREATE_NODE,
   INIT_EDIT_NODE,
   EDIT_NODE,
   DELETE_NODE,
+  INIT_MOVE_NODE,
   MOVE_NODE,
   TOGGLE_NODE
 } from '../actions/constants';
 
 const CONSTANTS = {
+  SHOW_OPTIONS: 'SHOW_OPTIONS',
   PENDING_CREATE: 'PENDING',
   CREATE: 'CREATE',
   PENDING_EDIT: 'PENDING_EDIT',
   EDIT: 'EDIT',
+  PENDING_MOVE: 'PENDING_MOVE',
   MOVE: 'MOVE',
   DELETE: 'DELETE',
   TOGGLE: 'TOGGLE'
@@ -20,6 +24,23 @@ const CONSTANTS = {
 
 export default function (state = initialState, action) {
   switch (action.type) {  
+    case SHOW_NODE_OPTIONS: {
+      const { 
+        id,
+        position
+      } = action.payload;
+
+      return {
+        ...state,
+        shouldUpdate: false,
+        activeNode: {
+          id,
+          position,
+          activeState: CONSTANTS.SHOW_OPTIONS
+        }
+      }
+    }
+
     case INIT_CREATE_NODE: {
       const { parentId } = action.payload;
 
@@ -84,6 +105,19 @@ export default function (state = initialState, action) {
           name,
           description,
           status
+        }
+      }
+    }
+
+    case INIT_MOVE_NODE: {
+      const { id } = action.payload;
+
+      return {
+        ...state,
+        shouldUpdate: false,
+        activeNode: {
+          id,
+          activeState: CONSTANTS.PENDING_MOVE
         }
       }
     }

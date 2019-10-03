@@ -1,10 +1,9 @@
 import * as d3 from 'd3'
 
 import {
-	INIT_CREATE_NODE,
-	INIT_EDIT_NODE,
-	MOVE_NODE,
-	TOGGLE_NODE
+	SHOW_NODE_OPTIONS,
+	INIT_MOVE_NODE,
+	MOVE_NODE
 } from '../../redux/actions/constants';
 
 import {
@@ -26,7 +25,7 @@ export default class TreeGraph {
 		this.i = 0;
 		this.duration = 750;
 
-		this.viewerWidth = document.body.clientWidth;
+		this.viewerWidth = document.body.clientWidth * 2;
 		// this.viewerHeight = document.body.clientHeight;
 		this.viewerHeight = 400;
 
@@ -84,14 +83,17 @@ export default class TreeGraph {
 			}
 
 			bindObj.dragStarted = true;
-
-			d3.select(this)
-				.raise()
-				.attr('stroke', 'black');
 		}
 
 		function dragged (node) {
 			if (bindObj.dragStarted) {
+				bindObj.dispatchActions({
+					type: INIT_MOVE_NODE,
+					payload: {
+						id: node.data.id
+					}
+				});
+
 				bindObj.domNode = this;
 
 				d3.select(this)
@@ -112,21 +114,15 @@ export default class TreeGraph {
 					.filter((d, i) => d.target.id === node.id)
 					.remove();
 
-				bindObj.g.selectAll('g.node')
-					.data(
-						bindObj.root.descendants(),
-						(d) => d.id
-					)
-					.filter((d, i) => d.id === node.id)
-					.remove();
+				d3.select(this)
 					// .attr('cx', (d) => node.x = d3.event.x)
 					// .attr('cy', (d) => node.y = d3.event.y)
-					// .attr('cx', (d) => node.y0 = d3.event.x)
-					// .attr('cy', (d) => node.x0 = d3.event.y)
-					// .attr(
-					// 	'transform', 
-					// 	(d) => `translate(${d.y0 - 115},${d.x0 + 120})`
-					// );
+					.attr('cx', (d) => node.y0 = d3.event.x)
+					.attr('cy', (d) => node.x0 = d3.event.y)
+					.attr(
+						'transform', 
+						(d) => `translate(${d.y0 - 115},${d.x0 + 120})`
+					);
 			}
 		}
 
@@ -158,11 +154,15 @@ export default class TreeGraph {
 		this.dispatch(action);
 	}
 
-	initCreateNode (node) {
+	showNodeOptions (node) {
 		this.dispatchActions({
-			type: INIT_CREATE_NODE,
+			type: SHOW_NODE_OPTIONS,
 			payload: {
-				parentId: node.data.id
+				id: node.data.id,
+				position: {
+					x: node.x,
+					y: node.y
+				}
 			}
 		});
 	}
@@ -178,16 +178,6 @@ export default class TreeGraph {
 		});
 	}
 
-	initEditNode(node) {
-		this.dispatchActions({
-			type: INIT_EDIT_NODE,
-			payload: {
-				id: node.data.id,
-				parentId: node.parent.data.id
-			}
-		});
-	}
-
 	overCircle (node) {
 		this.selectedNode = node;
 	}
@@ -196,21 +186,14 @@ export default class TreeGraph {
 		this.selectedNode = null;
 	}
 
-	toggle (node) {
-		this.dispatchActions({
-			type: TOGGLE_NODE,
-			payload: {
-				id: node.data.id
-			}
-		});
-	}
-
 	click (node) {
 		if (d3.event.defaultPrevented) {
 			return;
 		}
 
-		this.toggle(node);
+		this.dragStarted = false;
+		this.showNodeOptions(node);
+		// this.toggle(node);
 	}
 
 	dblClick (node) {
@@ -254,7 +237,7 @@ export default class TreeGraph {
 			.attr('class', 'node')
 			.attr('transform', (d) => `translate(${source.y0}, ${source.x0})`)
 			.on('click', bindObj.click.bind(bindObj))
-			.on('dblclick', bindObj.dblClick.bind(bindObj))
+			// .on('dblclick', bindObj.dblClick.bind(bindObj))
 			// .on('mouseup', bindObj.mouseUp.bind(bindObj))
 			// .on('mousedown', bindObj.mouseDown.bind(bindObj))
 			.call(
@@ -267,10 +250,10 @@ export default class TreeGraph {
 		nodeEnter.append('circle')
 			.attr('r', 0)
 			.transition()
-			// .attr('r', 6)
-			.attr('r',
-				(d) => getChildCount(d.data) ? getChildCount(d.data) * 4 : 6
-			)
+			.attr('r', (d) => {
+					const childCount = getChildCount(d.data);
+					return childCount ? childCount * 4 : 6
+			})
 			.attr('class', 'nodeCircle')
 			.style(
 				'fill',
@@ -312,9 +295,10 @@ export default class TreeGraph {
 			);
 
 		nodeUpdate.select('circle.nodeCircle')
-			.attr('r',
-				(d) => getChildCount(d.data) ? getChildCount(d.data) * 4 : 6
-			)
+			.attr('r', (d) => {
+					const childCount = getChildCount(d.data);
+					return childCount ? childCount * 4 : 6
+			})
 			.style(
 				'fill',
 				(d) => d.data.status === 'COMPLETE' ? '#3CB371' :

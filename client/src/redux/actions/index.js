@@ -1,13 +1,22 @@
 import {
+	SHOW_NODE_OPTIONS,
 	INIT_CREATE_NODE,
 	CREATE_NODE,
 	INIT_EDIT_NODE,
 	EDIT_NODE,
 	DELETE_NODE,
+	INIT_MOVE_NODE,
 	MOVE_NODE,
 	CLOSE_MODAL,
 	TOGGLE_NODE
 } from './constants';
+
+export const showNodeOptions = id => ({
+	type: SHOW_NODE_OPTIONS,
+	payload: {
+		id
+	}
+});
 
 export const initCreateNode = parentId => ({
 	type: INIT_CREATE_NODE,
@@ -49,6 +58,13 @@ export const deleteNode = ({ id, parentId }) => ({
 	}
 });
 
+export const initMoveNode = id => ({
+	type: INIT_MOVE_NODE,
+	payload: {
+		id
+	}
+});
+
 export const moveNode = (id, parentId, newParentId) => ({
 	type: MOVE_NODE,
 	payload: {
@@ -58,7 +74,7 @@ export const moveNode = (id, parentId, newParentId) => ({
 	}
 });
 
-export const toggleNode = ({ id }) => ({
+export const toggleNode = id => ({
 	type: TOGGLE_NODE,
 	payload: { id }
 });

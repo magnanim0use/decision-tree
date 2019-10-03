@@ -16,7 +16,7 @@ const existingState = getState();
 
 const store = createStore(
 	rootReducer,
-	existingState,
+	// existingState,
 	applyMiddleware(
 		loggerMiddleware,
 		treeMiddleware

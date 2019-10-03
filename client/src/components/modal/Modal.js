@@ -43,7 +43,7 @@ const mapStateToProps = state => {
   } = state;
 
   if (!activeNode) {
-    return;
+    return state;
   }
 
   return {

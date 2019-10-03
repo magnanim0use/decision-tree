@@ -1,11 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import Tooltip from '../tooltip/Tooltip';
 import './Tree.css';
 import {
-	initCreateNode,
-	initEditNode,
-	moveNode,
-	toggleNode
+	moveNode
 } from '../../redux/actions';
 
 import TreeGraph from './render';
@@ -14,8 +12,10 @@ let treeGraph;
 
 function Tree() {	
 	return (
-	  <div className="Tree">
-	  	<div id="decision-tree-container" />
+	  <div className='Tree'>
+	  	<div id='decision-tree-container'>
+	  		<Tooltip />
+	  	</div>
 	  </div>	
 	);
 }
@@ -27,10 +27,7 @@ const mapDispatchToProps = (dispatch) => {
 	}, 300);
 
 	return {
-		initCreateNode: (...args) => dispatch(initCreateNode(...args)),
-		initEditNode: (...args) => dispatch(initEditNode(...args)),
-		moveNode: (...args) => dispatch(moveNode(...args)),
-		toggleNode: (...args) => dispatch(toggleNode(...args))
+		moveNode: (...args) => dispatch(moveNode(...args))
 	}
 }
 

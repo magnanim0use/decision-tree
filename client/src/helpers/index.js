@@ -23,7 +23,7 @@ export function findNodeById (treeData, id) {
 		}
 	)
 
-	return node;
+	return node || {};
 }
 
 export function getChildCount (node) {
