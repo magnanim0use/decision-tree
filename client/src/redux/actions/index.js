@@ -11,10 +11,18 @@ import {
 	TOGGLE_NODE
 } from './constants';
 
-export const showNodeOptions = id => ({
+export const showNodeOptions = ({ 
+	id, 
+	position,  
+	children,
+	_children
+}) => ({
 	type: SHOW_NODE_OPTIONS,
 	payload: {
-		id
+		id,
+		position,
+		_children,
+		children
 	}
 });
 

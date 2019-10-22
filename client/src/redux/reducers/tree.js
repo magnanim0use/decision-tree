@@ -27,7 +27,9 @@ export default function (state = initialState, action) {
     case SHOW_NODE_OPTIONS: {
       const { 
         id,
-        position
+        position,
+        children,
+        _children
       } = action.payload;
 
       return {
@@ -36,6 +38,8 @@ export default function (state = initialState, action) {
         activeNode: {
           id,
           position,
+          children,
+          _children,
           activeState: CONSTANTS.SHOW_OPTIONS
         }
       }
@@ -173,55 +177,63 @@ const initialState = {
       "id": 1,
       "status": "INCLOMPLETE",
       "children": [
-        { 
-            "name": "B",
-            "description": "Node B",
-            "status": "INCLOMPLETE",
-            "id": 2
-        },
         {
-          "name": "C",
-          "description": "Node C",
+          "name": "Collapsible node",
+          "description": "The size of the collapsed node depends on the number of subnodes",
           "status": "INCLOMPLETE",
-          "id": 3,
+          "id": 2,
           "children": [
               { 
-                  "name": "D",
-                  "description": "Node D",
+                  "name": "Click on me to see node edit & creation options",
+                  "description": "There are a few :)",
+                  "status": "INCLOMPLETE",
+                  "id": 3
+              }, 
+              { 
+                  "name": "You can drag and drop nodes around the tree",
+                  "description": "Pretty neat, huh?",
                   "status": "INCLOMPLETE",
                   "id": 4
               }, 
               { 
-                  "name": "E",
-                  "description": "Node E",
+                  "name": "Any changes will persist if you refresh",
+                  "description": "The redux state is saved in local storage, so your session is saved.",
                   "status": "INCLOMPLETE",
-                  "id": 5
-              }, 
-              { 
-                  "name": "F",
-                  "description": "Node F",
-                  "status": "INCLOMPLETE",
-                  "id": 7 
+                  "id": 5 
               }
             ]
         },
-        { 
-            "name": "G",
-            "description": "Node G",
-            "status": "INCLOMPLETE",
-            "id": 6
-        },
         {
-            "name": "H",
-            "description": "Node H",
+            "name": "B",
+            "description": "Node B",
             "status": "INCLOMPLETE",
-            "id": 10,
+            "id": 6,
             "children": [
               { 
-                  "name": "I",
-                  "description": "Node I",
+                  "name": "Tech stack:",
+                  "description": "A list of libraries used to make this app",
                   "status": "INCLOMPLETE",
-                  "id": 9
+                  "id": 7,
+                  "children": [
+                      { 
+                          "name": "React",
+                          "description": "A popular, fast library for building UI components",
+                          "status": "INCLOMPLETE",
+                          "id": 8
+                      }, 
+                      { 
+                          "name": "D3",
+                          "description": "For interactive, dynamic data visualizations",
+                          "status": "INCLOMPLETE",
+                          "id": 9
+                      }, 
+                      { 
+                          "name": "Redux",
+                          "description": "State-based, event-driven data flow",
+                          "status": "INCLOMPLETE",
+                          "id": 10 
+                      }
+                    ]
               }, 
               { 
                   "name": "J",
@@ -230,12 +242,6 @@ const initialState = {
                   "id": 11 
               }
             ]
-        },
-        { 
-            "name": "K",
-            "description": "Node K",
-            "status": "INCLOMPLETE",
-            "id": 8
         }
       ]
     }

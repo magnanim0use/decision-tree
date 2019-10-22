@@ -83,17 +83,17 @@ export default class TreeGraph {
 			}
 
 			bindObj.dragStarted = true;
+
+			bindObj.dispatchActions({
+				type: INIT_MOVE_NODE,
+				payload: {
+					id: node.data.id
+				}
+			});
 		}
 
 		function dragged (node) {
 			if (bindObj.dragStarted) {
-				bindObj.dispatchActions({
-					type: INIT_MOVE_NODE,
-					payload: {
-						id: node.data.id
-					}
-				});
-
 				bindObj.domNode = this;
 
 				d3.select(this)
@@ -143,10 +143,24 @@ export default class TreeGraph {
 				.attr('stroke', null);
 		}
 
+		function overCircle (node) {
+			bindObj.selectedNode = node;
+			d3.select(this)
+				.style('fill', 'blue');
+		}
+
+		function outCircle (node) {
+			bindObj.selectedNode = null;
+			d3.select(this)
+				.style('fill', 'red');
+		}
+
 		return {
 			dragStarted,
 			dragged,
-			dragEnded
+			dragEnded,
+			overCircle,
+			outCircle
 		};
 	}
 
@@ -162,7 +176,9 @@ export default class TreeGraph {
 				position: {
 					x: node.x,
 					y: node.y
-				}
+				},
+				_children: node.data._children,
+				children: node.data.children 
 			}
 		});
 	}
@@ -277,12 +293,8 @@ export default class TreeGraph {
 			.attr('opacity', 0.2)
 			.style('fill', 'red')
 			.attr('pointer-events', 'mouseover')
-			.on('mouseover', (node) => {
-				bindObj.overCircle(node);
-			})
-			.on('mouseout', (node) => {
-				bindObj.outCircle(node);
-			});
+			.on('mouseover', bindObj.dragBehavior.overCircle)
+			.on('mouseout', bindObj.dragBehavior.outCircle);
 
 		const nodeUpdate = nodeEnter.merge(node);
 

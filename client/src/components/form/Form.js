@@ -39,7 +39,7 @@ class Form extends React.Component {
               { 
                 fieldMode.inputs.map((inputValues) => {
                   return (
-                    <div className='FormInput'>
+                    <div className={ `FormInput FormInput_${ inputValues.title }` }>
                       <h4>{ inputValues.title }</h4>
                       <input
                         type="text"

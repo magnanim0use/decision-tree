@@ -12,13 +12,15 @@ import {
 class TooltipComponent extends React.Component {
     render () {
         const {
-          x, y, isActive
+          x, 
+          y, 
+          isActive
         } = this.props;
 
         const styles = {
           display: isActive ? 'block' : 'none',
-          left: `${y + 120}px`,
-          top: `${x - 28}px`
+          left: `${y + 110}px`,
+          top: `${x - 20}px`
         };
 
         return (
@@ -31,9 +33,13 @@ class TooltipComponent extends React.Component {
               () => this.props.initEditNode(this.props.id)
             }>Edit</button>
 
-            <button onClick={ 
-              () => this.props.toggleNode(this.props.id)
-            }>Collapse</button>
+            {
+              this.props.children || this.props._children ?
+                <button onClick={ 
+                  () => this.props.toggleNode(this.props.id)
+                }>{ this.props._children ? 'Expand' : 'Collapse' }</button>
+              : null
+            }
           </div>
         );
     } 
@@ -57,14 +63,18 @@ const mapStateToProps = (state, ownProps) => {
       id,
       position: {
         x, y
-      }
+      },
+      children,
+      _children
     } = activeNode;
 
     return {
       isActive: true,
       id,
       x,
-      y
+      y,
+      children,
+      _children
     }
   } else {
     return {

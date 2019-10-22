@@ -37,9 +37,12 @@ const treeMiddleware = store => next => action => {
 				description
 			};
 
-			parentNode.children && parentNode.children.length ? 
-			  parentNode.children.push(newNode) :
-			  parentNode.children = [ newNode ];
+			const isCollapsed = parentNode._children && parentNode._children.length;
+			const childProp = isCollapsed ? '_children' : 'children';
+
+			parentNode[ childProp ] && parentNode[ childProp ].length ? 
+			  parentNode[ childProp ].push(newNode) :
+			  parentNode[ childProp ] = [ newNode ];
 
 			 Object.assign(
 			 	action.payload,
@@ -131,7 +134,10 @@ const treeMiddleware = store => next => action => {
 
 			const nodeDataObject = findNodeById(data, id);
 			const originalParentNodeDataObject = findNodeById(data, parentId);
-			const newParentNodeDataObject = findNodeById(data, newParentId)
+			const newParentNodeDataObject = findNodeById(data, newParentId);
+
+			const isCollapsed = newParentNodeDataObject._children && newParentNodeDataObject._children.length;
+			const childProp = isCollapsed ? '_children' : 'children';
 
 			const childNodeIndex = originalParentNodeDataObject
 				.children
@@ -141,12 +147,12 @@ const treeMiddleware = store => next => action => {
 				.children
 				.splice(childNodeIndex, 1);
 
-			if (newParentNodeDataObject.children && newParentNodeDataObject.children.length) {
+			if (newParentNodeDataObject[ childProp ] && newParentNodeDataObject[ childProp ].length) {
 				newParentNodeDataObject
-					.children
+					[ childProp ]
 					.push(nodeDataObject);
 			} else {
-				newParentNodeDataObject.children = [ nodeDataObject ];
+				newParentNodeDataObject[ childProp ] = [ nodeDataObject ];
 			}
 
 			return next(action);
