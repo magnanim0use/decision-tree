@@ -1,0 +1,28 @@
+{
+	"CREATE": {
+		"title": "Create A Node",
+		"inputs": [
+			{
+				"title": "Name",
+				"name": "name"
+			}, 
+			{
+				"title": "Description",
+				"name": "description"
+			}
+		]
+	},
+	"EDIT": {
+		"title": "Edit A Node",
+		"inputs": [
+			{
+				"title": "Name",
+				"name": "name"
+			}, 
+			{
+				"title": "Description",
+				"name": "description"
+			}
+		]
+	}
+}

@@ -1,19 +1,19 @@
 import * as d3 from 'd3'
-import {
-	findNodeById
-} from '../../helpers';
 
 import {
-	INIT_CREATE_NODE,
+	SHOW_NODE_OPTIONS,
+	INIT_MOVE_NODE,
 	MOVE_NODE
 } from '../../redux/actions/constants';
+
+import {
+	getChildCount
+} from '../../helpers';
 
 export default class TreeGraph {
 
 	constructor ({ dispatch }) {
 		const bindObj = this;
-		this.totalNodes = 0;
-		this.maxLabelLength = 0;
 		this.selectedNode = null;
 		this.draggingNode = null;
 
@@ -25,7 +25,7 @@ export default class TreeGraph {
 		this.i = 0;
 		this.duration = 750;
 
-		this.viewerWidth = document.body.clientWidth;
+		this.viewerWidth = document.body.clientWidth * 2;
 		// this.viewerHeight = document.body.clientHeight;
 		this.viewerHeight = 400;
 
@@ -39,23 +39,12 @@ export default class TreeGraph {
 			.attr('width', bindObj.viewerWidth)
 			.attr('height', bindObj.viewerHeight)
 			.attr('class', 'overlay');
-			// .call(bindObj.zoomListener);
 
 		this.g = d3.select('#decision-tree-container svg')
 			.append('g')
 			.attr('transform', 'translate(80,0)');
 
 		this.dragBehavior = this.dragListener();
-
-		// this.zoomListener = d3.zoom()
-		// 	.scaleExtent([
-		// 		0.1,
-		// 		3
-		// 	])
-		// 	.on(
-		// 		'zoom',
-		// 		bindObj.zoom(this.svgGroup)
-		// 	);
 	}
 
 	render (treeData) {
@@ -65,29 +54,24 @@ export default class TreeGraph {
 		} = treeData;
 
 		this.treeData = data;
+
+		// if (activeNode) {
+		// 	let nodeToUpdate;
+		// 	switch (activeNode.activeState) {
+		// 		case 'CREATE':
+		// 			const newTree = d3.hierarchy(data);
+		// 			return this.update(newTree);
+
+		// 		case 'EDIT':
+		// 			nodeToUpdate = findNodeById(this.root, activeNode.id);
+		// 			return this.update(nodeToUpdate);
+		// 	}
+		// }
+
 		this.root = d3.hierarchy(this.treeData);
 		this.root.x0 = this.viewerHeight / 2; //work with this
 		this.root.y0 = 100; //should be dynamic
 		this.update(this.root);
-		// this.centerNode(this.root);
-	}
-
-	// sortTree (tree) {
-	// 	this.tree.sort((a, b) => 
-	// 		b.name.toLowerCase() < a.name.toLowerCase() ? 1 : -1
-	// 	);
-	// }
-
-	//pan (node, direction, panSpeed = 200, panBoundary = 20) {
-	// 	const translateCoords = transform();
-	// }
-
-	zoom (svgGroup) {
-		// this.svgGroup
-		// 	.attr(
-		// 		'transform',
-		// 		`translate(${d3.event.translate})scale(${d3.event.scale})`
-		// 	);
 	}
 
 	dragListener () {
@@ -99,17 +83,13 @@ export default class TreeGraph {
 			}
 
 			bindObj.dragStarted = true;
-			
-			// node.x0 += d3.event.dy;
-			// node.y0 += d3.event.dx;
 
-			d3.select(this)
-				.raise()
-				.attr('stroke', 'black')
-				// .attr(
-				// 	'transform', 
-				// 	(d) => `translate(${d.y0},${d.x0})`
-				// );
+			bindObj.dispatchActions({
+				type: INIT_MOVE_NODE,
+				payload: {
+					id: node.data.id
+				}
+			});
 		}
 
 		function dragged (node) {
@@ -134,23 +114,24 @@ export default class TreeGraph {
 					.filter((d, i) => d.target.id === node.id)
 					.remove();
 
-				bindObj.g.selectAll('g.node')
-					.data(
-						bindObj.root.descendants(),
-						(d) => d.id
-					)
-					.filter((d, i) => d.id === node.id)
-					.remove();
-
 				d3.select(this)
-					.attr('cx', (d) => node.x = d3.event.x)
-					.attr('cy', (d) => node.y = d3.event.y);
+					// .attr('cx', (d) => node.x = d3.event.x)
+					// .attr('cy', (d) => node.y = d3.event.y)
+					.attr('cx', (d) => node.y0 = d3.event.x)
+					.attr('cy', (d) => node.x0 = d3.event.y)
+					.attr(
+						'transform', 
+						(d) => `translate(${d.y0 - 115},${d.x0 + 120})`
+					);
 			}
 		}
 
 		function dragEnded (node) {
+			d3.selectAll('.ghostCircle')
+				.attr('class', 'ghostCircle');
+
 			if (!bindObj.selectedNode) {
-				return;
+				return bindObj.update(node);
 			}
 
 			bindObj.moveNode(
@@ -158,17 +139,28 @@ export default class TreeGraph {
 				bindObj.selectedNode
 			);
 
-			d3.selectAll('.ghostCircle')
-				.attr('class', 'ghostCircle');
-
 			d3.select(this)
 				.attr('stroke', null);
+		}
+
+		function overCircle (node) {
+			bindObj.selectedNode = node;
+			d3.select(this)
+				.style('fill', 'blue');
+		}
+
+		function outCircle (node) {
+			bindObj.selectedNode = null;
+			d3.select(this)
+				.style('fill', 'red');
 		}
 
 		return {
 			dragStarted,
 			dragged,
-			dragEnded
+			dragEnded,
+			overCircle,
+			outCircle
 		};
 	}
 
@@ -176,12 +168,17 @@ export default class TreeGraph {
 		this.dispatch(action);
 	}
 
-	initCreateNode (node) {
-		console.log(node)
+	showNodeOptions (node) {
 		this.dispatchActions({
-			type: INIT_CREATE_NODE,
+			type: SHOW_NODE_OPTIONS,
 			payload: {
-				parentId: node.data.id
+				id: node.data.id,
+				position: {
+					x: node.x,
+					y: node.y
+				},
+				_children: node.data._children,
+				children: node.data.children 
 			}
 		});
 	}
@@ -191,7 +188,7 @@ export default class TreeGraph {
 			type: MOVE_NODE,
 			payload: {
 				id: node.data.id,
-				oldParentId: node.parent.data.id,
+				parentId: node.parent.data.id,
 				newParentId: newParentNode.data.id
 			}
 		});
@@ -199,53 +196,41 @@ export default class TreeGraph {
 
 	overCircle (node) {
 		this.selectedNode = node;
-		// this.updateTempConnector();
 	}
 
 	outCircle () {
 		this.selectedNode = null;
-		// this.updateTempConnector();
 	}
 
-	updateTempConnector () {}
-
-	centerNode (source) {
-		// const bindObj = this;
-
-		// this.scale = this.zoomListener.scale();
-		// const x = (-source.y0) * this.scale + this.viewerWidth / 2;
-		// const y = (-source.x0) * this.scale + this.viewerHeight / 2;
-
-		// d3.select('g')
-		// 	.transition()
-		// 	.duration(this.duration)
-		// 	.attr(
-		// 		'transform',
-		// 		`translate(${x}, ${y})scale(${bindObj.scale})`
-		// 	);
-
-		// this.zoomListener.scale(this.scale);
-		// this.zoomListener.traslate([ x, y ]);
-	}
-
-	toggleChildren (node) {
-		if (node.children) {
-			node._children = node.children;
-			node.children = null;
-		} else if (node._children) {
-			node.children = node._children;
-			node._children = null;
-		}
-	}
-
-	click (data) {
-		console.log('CLICKED NODE:', data)
+	click (node) {
 		if (d3.event.defaultPrevented) {
 			return;
 		}
 
-		this.toggleChildren(data);
-		this.update(data);
+		this.dragStarted = false;
+		this.showNodeOptions(node);
+		// this.toggle(node);
+	}
+
+	dblClick (node) {
+		this.initCreateNode(node);
+	}
+
+	mouseDown (node) {
+		const bindObj = this;
+		this.mouseIsHeld = true;
+		setTimeout(() => {
+			if (!this.mouseIsHeld) {
+				return;
+			}
+
+			bindObj.initEditNode(node);
+		}, 300);
+	}
+
+	mouseUp (node) {
+		console.log('mouseUp!')
+		this.mouseIsHeld = false;
 	}
 
 	update (source) {
@@ -268,7 +253,9 @@ export default class TreeGraph {
 			.attr('class', 'node')
 			.attr('transform', (d) => `translate(${source.y0}, ${source.x0})`)
 			.on('click', bindObj.click.bind(bindObj))
-			.on('dblclick', bindObj.initCreateNode.bind(bindObj))
+			// .on('dblclick', bindObj.dblClick.bind(bindObj))
+			// .on('mouseup', bindObj.mouseUp.bind(bindObj))
+			// .on('mousedown', bindObj.mouseDown.bind(bindObj))
 			.call(
 				d3.drag()
 				.on('start', bindObj.dragBehavior.dragStarted)
@@ -277,19 +264,26 @@ export default class TreeGraph {
 			);
 
 		nodeEnter.append('circle')
+			.attr('r', 0)
+			.transition()
+			.attr('r', (d) => {
+					const childCount = getChildCount(d.data);
+					return childCount ? childCount * 4 : 6
+			})
 			.attr('class', 'nodeCircle')
-			.attr('r', 10)
 			.style(
 				'fill',
-				(d) => d._children ? 'lightsteelblue' : '#fff'
+				(d) => d.data.status === 'COMPLETE' ? '#3CB371' :
+					d.data._children ? 'lightsteelblue' : 
+					'#fff'
 			);
 
 		nodeEnter.append('text')
-			.attr('x', (d) => d.children || d._children ? -10 : 10)
+			.attr('x', (d) => d.children || d.data._children ? -10 : 10)
 			.attr('dy', '.35em')
 			.attr('font-size', '150%')
 			.attr('class', 'nodeText')
-			.attr('text-anchor', (d) => d.children || d._children ? 'end' : 'start')
+			.attr('text-anchor', (d) => d.children || d.data._children ? 'end' : 'start')
 			.text((d) => d.data.name)
 			.style('fill-opacity', 0);
 
@@ -299,16 +293,13 @@ export default class TreeGraph {
 			.attr('opacity', 0.2)
 			.style('fill', 'red')
 			.attr('pointer-events', 'mouseover')
-			.on('mouseover', (node) => {
-				bindObj.overCircle(node);
-			})
-			.on('mouseout', (node) => {
-				bindObj.outCircle(node);
-			});
+			.on('mouseover', bindObj.dragBehavior.overCircle)
+			.on('mouseout', bindObj.dragBehavior.outCircle);
 
 		const nodeUpdate = nodeEnter.merge(node);
 
-		nodeUpdate.transition()
+		nodeUpdate
+			.transition()
 			.duration(bindObj.duration)
 			.attr(
 				'transform',
@@ -316,13 +307,26 @@ export default class TreeGraph {
 			);
 
 		nodeUpdate.select('circle.nodeCircle')
-			.attr('r', 6)
+			.attr('r', (d) => {
+					const childCount = getChildCount(d.data);
+					return childCount ? childCount * 4 : 6
+			})
 			.style(
-				'fill', 
-				(d) => d._children ? 'lightsteelblue' : '#fff'
+				'fill',
+				(d) => d.data.status === 'COMPLETE' ? '#3CB371' :
+					d.data._children ? 'lightsteelblue' : 
+					'#fff'
 			);
 
-		nodeUpdate.select('text')
+		nodeUpdate
+			.select('text')
+			.transition()
+			.attr('x', 
+				(d) => 
+					d.children ? -10 :
+					d.data._children ? (-10 - (d.data._children.length * 2)) : 
+					10
+			)
 			.style('fill-opacity', 1);
 
 		const nodeExit = node
@@ -335,14 +339,19 @@ export default class TreeGraph {
 			)
 			.remove();
 
-		nodeExit.select('circle')
+		nodeExit
+			.select('circle')
 			.attr('r', 0);
 
-		nodeExit.select('text')
+		nodeExit
+			.select('text')
 			.style('fill-opacity', 0);
 
 		const link = this.g.selectAll('.link')
-    		.data(bindObj.root.links(), (d) => d.target.id);
+    		.data(
+    			bindObj.root.links(), 
+    			(d) => d.target.id
+    		);
 
 		const linkEnter = link
 			.enter()

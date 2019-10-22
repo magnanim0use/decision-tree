@@ -4,14 +4,12 @@ import {
   INIT_EDIT_NODE,
   EDIT_NODE,
   DELETE_NODE,
-  MOVE_NODE,
   CLOSE_MODAL
-} from "../actions/constants";
+} from '../actions/constants';
 
 const initialState = {
     modalIsOpen: false,
-    shouldCloseOnOverlayClick: true,
-    formData: {}
+    shouldCloseOnOverlayClick: true
 };
 
 export default function (state = initialState, action) {
@@ -23,7 +21,16 @@ export default function (state = initialState, action) {
       };
     }
 
+    case INIT_EDIT_NODE: {
+      return {
+        ...state,
+        modalIsOpen: true
+      }
+    }
+
     case CREATE_NODE:
+    case EDIT_NODE:
+    case DELETE_NODE:
     case CLOSE_MODAL: {
       return {
         ...state,

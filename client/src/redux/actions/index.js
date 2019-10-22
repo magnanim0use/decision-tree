@@ -1,11 +1,30 @@
 import {
+	SHOW_NODE_OPTIONS,
 	INIT_CREATE_NODE,
 	CREATE_NODE,
+	INIT_EDIT_NODE,
 	EDIT_NODE,
 	DELETE_NODE,
+	INIT_MOVE_NODE,
 	MOVE_NODE,
-	CLOSE_MODAL
+	CLOSE_MODAL,
+	TOGGLE_NODE
 } from './constants';
+
+export const showNodeOptions = ({ 
+	id, 
+	position,  
+	children,
+	_children
+}) => ({
+	type: SHOW_NODE_OPTIONS,
+	payload: {
+		id,
+		position,
+		_children,
+		children
+	}
+});
 
 export const initCreateNode = parentId => ({
 	type: INIT_CREATE_NODE,
@@ -14,34 +33,59 @@ export const initCreateNode = parentId => ({
 	}
 });
 
-export const createNode = (parentId) => ({
+export const createNode = ({ name, parentId, description }) => ({
 	type: CREATE_NODE,
 	payload: {
+		name,
+		description,
 		parentId
 	}
 });
 
-export const editNode = id => ({
+export const initEditNode = id => ({
+	type: INIT_EDIT_NODE,
+	payload: {
+		id
+	}
+});
+
+export const editNode = ({ id, name, description, status }) => ({
 	type: EDIT_NODE,
 	payload: {
-		id
+		id,
+		name,
+		description,
+		status
 	}
 });
 
-export const deleteNode = id => ({
+export const deleteNode = ({ id, parentId }) => ({
 	type: DELETE_NODE,
+	payload: {
+		id,
+		parentId
+	}
+});
+
+export const initMoveNode = id => ({
+	type: INIT_MOVE_NODE,
 	payload: {
 		id
 	}
 });
 
-export const moveNode = (id, oldParentId, newParentId) => ({
+export const moveNode = (id, parentId, newParentId) => ({
 	type: MOVE_NODE,
 	payload: {
 		id,
-		oldParentId,
+		parentId,
 		newParentId
 	}
+});
+
+export const toggleNode = id => ({
+	type: TOGGLE_NODE,
+	payload: { id }
 });
 
 export const closeModal = () => ({

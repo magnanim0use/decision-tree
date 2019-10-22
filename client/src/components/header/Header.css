@@ -1,0 +1,14 @@
+.Header {
+	position: fixed;
+	height: 60px;
+	z-index: 5;
+	width: 100%;
+	background: rgba(30,30,30,0.8);
+}
+
+.Header h4 {
+	font-family: 'Raleway', sans-serif;
+	color: white;
+	margin-left: 5%;
+	text-transform: lowercase;
+}

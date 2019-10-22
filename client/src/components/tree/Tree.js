@@ -1,13 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import Tooltip from '../tooltip/Tooltip';
 import './Tree.css';
-
 import {
-	hasTreeChanged
-} from '../../helpers';
-
-import {
-	INIT_CREATE_NODE
+	moveNode
 } from '../../redux/actions';
 
 import TreeGraph from './render';
@@ -16,27 +12,13 @@ let treeGraph;
 
 function Tree() {	
 	return (
-	  <div className="Tree">
-	  	<div id="decision-tree-container" />
+	  <div className='Tree'>
+	  	<div id='decision-tree-container'>
+	  		<Tooltip />
+	  	</div>
 	  </div>	
 	);
 }
-
-const initCreateNode = (parentId) => ({
-	type: 'INIT_CREATE_NODE',
-	payload: {
-		parentId
-	}
-});
-
-const moveNode = (nodeId, oldParentId, newParentId) => ({
-	type: 'MOVE_NODE',
-	payload: {
-		nodeId,
-		oldParentId,
-		newParentId
-	}
-});
 
 const mapDispatchToProps = (dispatch) => {
 	setTimeout (() => {
@@ -45,7 +27,6 @@ const mapDispatchToProps = (dispatch) => {
 	}, 300);
 
 	return {
-		initCreateNode: (...args) => dispatch(initCreateNode(...args)),
 		moveNode: (...args) => dispatch(moveNode(...args))
 	}
 }
@@ -54,6 +35,10 @@ const mapStateToProps = state => {
 	const {
 		tree
 	} = state;
+
+	if (!tree || !tree.shouldUpdate) {
+		return;
+	}
 
 	setTimeout(() => {
 		treeGraph.render(tree);
