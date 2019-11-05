@@ -13,6 +13,7 @@ import {
 
 export const showNodeOptions = ({ 
 	id, 
+	parentId,
 	position,  
 	children,
 	_children
@@ -20,6 +21,7 @@ export const showNodeOptions = ({
 	type: SHOW_NODE_OPTIONS,
 	payload: {
 		id,
+		parentId,
 		position,
 		_children,
 		children
@@ -42,10 +44,11 @@ export const createNode = ({ name, parentId, description }) => ({
 	}
 });
 
-export const initEditNode = id => ({
+export const initEditNode = ({ id, parentId }) => ({
 	type: INIT_EDIT_NODE,
 	payload: {
-		id
+		id,
+		parentId
 	}
 });
 

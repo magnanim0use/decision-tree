@@ -27,6 +27,7 @@ export default function (state = initialState, action) {
     case SHOW_NODE_OPTIONS: {
       const { 
         id,
+        parentId,
         position,
         children,
         _children
@@ -37,6 +38,7 @@ export default function (state = initialState, action) {
         shouldUpdate: false,
         activeNode: {
           id,
+          parentId,
           position,
           children,
           _children,

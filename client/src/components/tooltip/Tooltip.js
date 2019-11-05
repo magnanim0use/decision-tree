@@ -30,7 +30,10 @@ class TooltipComponent extends React.Component {
             }>Create Subnode</button>
 
             <button onClick={
-              () => this.props.initEditNode(this.props.id)
+              () => this.props.initEditNode({
+                id: this.props.id,
+                parentId: this.props.parentId
+              })
             }>Edit</button>
 
             {
@@ -61,6 +64,7 @@ const mapStateToProps = (state, ownProps) => {
   if (activeNode && activeNode.activeState === 'SHOW_OPTIONS' && activeNode.id !== ownProps.id) {
     const {
       id,
+      parentId,
       position: {
         x, y
       },
@@ -71,6 +75,7 @@ const mapStateToProps = (state, ownProps) => {
     return {
       isActive: true,
       id,
+      parentId,
       x,
       y,
       children,

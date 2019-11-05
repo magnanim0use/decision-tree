@@ -173,6 +173,7 @@ export default class TreeGraph {
 			type: SHOW_NODE_OPTIONS,
 			payload: {
 				id: node.data.id,
+				parentId: node.parent ? node.parent.data.id : null,
 				position: {
 					x: node.x,
 					y: node.y
